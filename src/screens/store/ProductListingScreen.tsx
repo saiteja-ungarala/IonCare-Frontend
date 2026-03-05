@@ -5,6 +5,7 @@ import {
     FlatList,
     Image,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -13,11 +14,44 @@ import {
     View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, spacing, storeTheme } from '../../theme/theme';
+import { borderRadius, shadows, spacing, storeTheme } from '../../theme/theme';
 import storeService, { StoreProduct } from '../../services/storeService';
 import { useCartStore } from '../../store/cartStore';
 import { resolveProductImageSource } from '../../utils/productImage';
+
+type ProductSort = 'popular' | 'new' | 'price_asc' | 'price_desc';
+
+const SORT_OPTIONS: Array<{ value: ProductSort; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
+    { value: 'popular', label: 'Popular', icon: 'flame' },
+    { value: 'new', label: 'Newest', icon: 'sparkles' },
+    { value: 'price_asc', label: 'Price Up', icon: 'trending-up-outline' },
+    { value: 'price_desc', label: 'Price Down', icon: 'trending-down-outline' },
+];
+
+const PRODUCT_CARD_PALETTES = [
+    {
+        media: ['#BFECE5', '#AEE6DE'] as const,
+        button: ['#00B8A4', '#009B8C'] as const,
+        brand: '#009C88',
+    },
+    {
+        media: ['#D8D2F3', '#CCC5EE'] as const,
+        button: ['#6E42DE', '#5B32CA'] as const,
+        brand: '#6A46DB',
+    },
+    {
+        media: ['#F5E3AD', '#F2DB98'] as const,
+        button: ['#F2A81A', '#E09200'] as const,
+        brand: '#D88400',
+    },
+    {
+        media: ['#C4EFD1', '#B4E6C4'] as const,
+        button: ['#22B15A', '#159749'] as const,
+        brand: '#1B9F53',
+    },
+];
 
 const showAddedToCartToast = (): void => {
     if (Platform.OS === 'android') {
@@ -28,6 +62,15 @@ const showAddedToCartToast = (): void => {
     Alert.alert('Cart', 'Added to cart');
 };
 
+const formatPrice = (value: number): string => {
+    const normalized = Number(value) || 0;
+    const showDecimals = normalized % 1 !== 0;
+    return `₹${normalized.toLocaleString('en-IN', {
+        minimumFractionDigits: showDecimals ? 2 : 0,
+        maximumFractionDigits: 2,
+    })}`;
+};
+
 export function ProductListingScreen({ route, navigation }: any) {
     const { categoryId, brandId, categoryName, brandName } = route.params || {};
     const [products, setProducts] = React.useState<StoreProduct[]>([]);
@@ -35,6 +78,7 @@ export function ProductListingScreen({ route, navigation }: any) {
     const [error, setError] = React.useState<string | null>(null);
     const [search, setSearch] = React.useState('');
     const [appliedSearch, setAppliedSearch] = React.useState('');
+    const [appliedSort, setAppliedSort] = React.useState<ProductSort>('popular');
     const [addingToCartId, setAddingToCartId] = React.useState<number | null>(null);
     const [failedImages, setFailedImages] = React.useState<Record<number, boolean>>({});
     const { addProductToCart, totalItems, fetchCart } = useCartStore();
@@ -48,6 +92,7 @@ export function ProductListingScreen({ route, navigation }: any) {
                 category_id: Number(categoryId),
                 brand_id: Number(brandId),
                 search: appliedSearch.trim() || undefined,
+                sort: appliedSort,
                 page: 1,
                 limit: 100,
             });
@@ -58,7 +103,7 @@ export function ProductListingScreen({ route, navigation }: any) {
         } finally {
             setIsLoading(false);
         }
-    }, [categoryId, brandId, appliedSearch]);
+    }, [categoryId, brandId, appliedSearch, appliedSort]);
 
     React.useEffect(() => {
         loadProducts();
@@ -67,7 +112,7 @@ export function ProductListingScreen({ route, navigation }: any) {
     useFocusEffect(
         React.useCallback(() => {
             fetchCart();
-        }, [fetchCart])
+        }, [fetchCart]),
     );
 
     const handleAddToCart = async (product: StoreProduct) => {
@@ -82,24 +127,58 @@ export function ProductListingScreen({ route, navigation }: any) {
         }
     };
 
-    const renderProduct = ({ item }: { item: StoreProduct }) => {
+    const renderProduct = ({ item, index }: { item: StoreProduct; index: number }) => {
         const productImage = item.image_url_full || item.imageUrlFull || item.image_url || item.imageUrl;
         const imageSource = resolveProductImageSource(productImage);
         const shouldShowImage = !!imageSource && !failedImages[item.id];
         const showMrp = item.mrp != null && item.mrp > item.price;
+        const discountPercent = showMrp ? Math.max(1, Math.round(((item.mrp! - item.price) / item.mrp!) * 100)) : 0;
         const isOutOfStock = item.stockQty <= 0;
+        const savingsAmount = showMrp ? item.mrp! - item.price : 0;
+        const palette = PRODUCT_CARD_PALETTES[index % PRODUCT_CARD_PALETTES.length];
 
         return (
             <TouchableOpacity
                 style={styles.productCard}
+                activeOpacity={0.93}
                 onPress={() => navigation.navigate('ProductDetails', { productId: item.id })}
             >
-                <View style={styles.imageWrap}>
+                <View style={styles.mediaWrap}>
+                    <LinearGradient
+                        colors={palette.media}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
+
+                    <View style={styles.badgeRow}>
+                        {discountPercent > 0 ? (
+                            <View style={styles.discountBadge}>
+                                <Text style={styles.discountText}>{discountPercent}% OFF</Text>
+                            </View>
+                        ) : (
+                            <View />
+                        )}
+                        <View style={[styles.stockBadge, isOutOfStock ? styles.stockBadgeMuted : null]}>
+                            <Text style={[styles.stockText, isOutOfStock ? styles.stockTextMuted : null]}>
+                                {isOutOfStock ? 'Out of stock' : 'In stock'}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        style={styles.wishlistGhost}
+                        activeOpacity={0.8}
+                        onPress={(event) => event.stopPropagation()}
+                    >
+                        <Ionicons name="heart" size={14} color="#D2B7DC" />
+                    </TouchableOpacity>
+
                     {shouldShowImage ? (
                         <Image
                             source={imageSource}
                             style={styles.productImage}
-                            resizeMode="cover"
+                            resizeMode="contain"
                             onError={() => setFailedImages(prev => ({ ...prev, [item.id]: true }))}
                         />
                     ) : (
@@ -110,33 +189,56 @@ export function ProductListingScreen({ route, navigation }: any) {
                     )}
                 </View>
 
-                <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-                <Text style={styles.productBrand} numberOfLines={1}>{item.brand?.name || 'Brand'}</Text>
+                <View style={styles.bodyWrap}>
+                    <Text style={[styles.brandTag, { color: palette.brand }]} numberOfLines={1}>
+                        {(item.brand?.name || brandName || 'Brand').toUpperCase()}
+                    </Text>
+                    <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
 
-                <View style={styles.priceRow}>
-                    <Text style={styles.priceText}>Rs {Number(item.price).toFixed(2)}</Text>
-                    {showMrp ? (
-                        <Text style={styles.mrpText}>Rs {Number(item.mrp).toFixed(2)}</Text>
-                    ) : null}
-                </View>
-
-                {isOutOfStock ? (
-                    <View style={[styles.addButton, styles.outOfStockButton]}>
-                        <Text style={styles.outOfStockText}>Out of stock</Text>
+                    <View style={styles.priceRow}>
+                        <Text style={styles.priceText}>{formatPrice(item.price)}</Text>
+                        {showMrp ? (
+                            <Text style={styles.mrpText}>{formatPrice(item.mrp!)}</Text>
+                        ) : null}
                     </View>
-                ) : (
-                    <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => handleAddToCart(item)}
-                        disabled={addingToCartId === item.id}
-                    >
-                        {addingToCartId === item.id ? (
-                            <ActivityIndicator size="small" color={storeTheme.textOnPrimary} />
-                        ) : (
-                            <Text style={styles.addButtonText}>Add to Cart</Text>
-                        )}
-                    </TouchableOpacity>
-                )}
+
+                    {showMrp ? (
+                        <Text style={styles.savingsText}>Save {formatPrice(savingsAmount)}</Text>
+                    ) : (
+                        <View style={styles.savingsSpacer} />
+                    )}
+
+                    {isOutOfStock ? (
+                        <View style={[styles.addButton, styles.outOfStockButton]}>
+                            <Text style={styles.outOfStockText}>Out of stock</Text>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            style={styles.addButton}
+                            onPress={(event) => {
+                                event.stopPropagation();
+                                handleAddToCart(item);
+                            }}
+                            disabled={addingToCartId === item.id}
+                        >
+                            <LinearGradient
+                                colors={palette.button}
+                                start={{ x: 0, y: 0.5 }}
+                                end={{ x: 1, y: 0.5 }}
+                                style={styles.addButtonGradient}
+                            >
+                                {addingToCartId === item.id ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <View style={styles.addButtonContent}>
+                                        <Ionicons name="cart-outline" size={14} color="#FFFFFF" />
+                                        <Text style={styles.addButtonText}>Add to Cart</Text>
+                                    </View>
+                                )}
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </TouchableOpacity>
         );
     };
@@ -145,14 +247,14 @@ export function ProductListingScreen({ route, navigation }: any) {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={22} color={storeTheme.text} />
+                    <Ionicons name="chevron-back" size={20} color={storeTheme.text} />
                 </TouchableOpacity>
                 <View style={styles.titleWrap}>
+                    <Text style={styles.headerKicker}>{categoryName || 'Category'} {'>'} {brandName || 'Brand'}</Text>
                     <Text style={styles.headerTitle} numberOfLines={1}>{brandName || 'Products'}</Text>
-                    <Text style={styles.headerSubtitle} numberOfLines={1}>{categoryName || 'Category'}</Text>
                 </View>
                 <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-                    <Ionicons name="cart-outline" size={22} color={storeTheme.text} />
+                    <Ionicons name="cart-outline" size={20} color={storeTheme.primaryDark} />
                     {totalItems > 0 ? (
                         <View style={styles.badge}>
                             <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
@@ -161,28 +263,50 @@ export function ProductListingScreen({ route, navigation }: any) {
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.searchWrap}>
-                <Ionicons name="search" size={18} color={storeTheme.textSecondary} />
-                <TextInput
-                    value={search}
-                    onChangeText={setSearch}
-                    placeholder="Search in this brand"
-                    placeholderTextColor={storeTheme.textSecondary}
-                    style={styles.searchInput}
-                    returnKeyType="search"
-                    onSubmitEditing={() => setAppliedSearch(search)}
-                />
-                {search ? (
-                    <TouchableOpacity onPress={() => { setSearch(''); setAppliedSearch(''); }}>
-                        <Ionicons name="close-circle" size={18} color={storeTheme.textSecondary} />
-                    </TouchableOpacity>
-                ) : null}
-            </View>
+            <View style={styles.controlsPanel}>
+                <View style={styles.searchWrap}>
+                    <Ionicons name="search" size={18} color={storeTheme.textSecondary} />
+                    <TextInput
+                        value={search}
+                        onChangeText={setSearch}
+                        placeholder="Search products..."
+                        placeholderTextColor={storeTheme.textSecondary}
+                        style={styles.searchInput}
+                        returnKeyType="search"
+                        onSubmitEditing={() => setAppliedSearch(search)}
+                    />
+                    {search ? (
+                        <TouchableOpacity onPress={() => { setSearch(''); setAppliedSearch(''); }}>
+                            <Ionicons name="close-circle" size={18} color={storeTheme.textSecondary} />
+                        </TouchableOpacity>
+                    ) : null}
+                </View>
 
-            <View style={styles.searchActionRow}>
-                <TouchableOpacity style={styles.searchButton} onPress={() => setAppliedSearch(search)}>
-                    <Text style={styles.searchButtonText}>Search</Text>
-                </TouchableOpacity>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.sortRow}
+                >
+                    {SORT_OPTIONS.map(option => {
+                        const isActive = option.value === appliedSort;
+                        return (
+                            <TouchableOpacity
+                                key={option.value}
+                                onPress={() => setAppliedSort(option.value)}
+                                style={[styles.sortChip, isActive ? styles.sortChipActive : null]}
+                            >
+                                <Ionicons
+                                    name={option.icon}
+                                    size={14}
+                                    color={isActive ? '#FFFFFF' : storeTheme.textSecondary}
+                                />
+                                <Text style={[styles.sortChipText, isActive ? styles.sortChipTextActive : null]}>
+                                    {option.label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
             </View>
 
             {isLoading ? (
@@ -225,124 +349,205 @@ export function ProductListingScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: storeTheme.background,
+        backgroundColor: '#ECF2F6',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: storeTheme.border,
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.xxl,
+        paddingBottom: spacing.md,
+        backgroundColor: '#ECF2F6',
     },
     backButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: '#F7FAFC',
+        borderWidth: 1,
+        borderColor: '#D7E3EA',
     },
     titleWrap: {
         flex: 1,
-        marginHorizontal: spacing.sm,
+        marginHorizontal: spacing.md,
+    },
+    headerKicker: {
+        fontSize: 12,
+        color: '#6A7E92',
+        fontWeight: '500',
     },
     headerTitle: {
-        fontSize: 17,
+        marginTop: 3,
+        fontSize: 22,
+        lineHeight: 26,
         fontWeight: '700',
-        color: storeTheme.text,
-    },
-    headerSubtitle: {
-        fontSize: 12,
-        color: storeTheme.textSecondary,
-        marginTop: 2,
+        color: '#132336',
+        letterSpacing: -0.15,
     },
     cartButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 48,
+        height: 48,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: 'rgba(220, 252, 247, 0.88)',
+        borderWidth: 1,
+        borderColor: 'rgba(0, 168, 152, 0.22)',
     },
     badge: {
         position: 'absolute',
-        top: 3,
-        right: 3,
-        minWidth: 16,
-        height: 16,
-        borderRadius: 8,
+        top: -5,
+        right: -4,
+        minWidth: 20,
+        height: 20,
+        borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: storeTheme.primary,
+        backgroundColor: '#FF5B5B',
         paddingHorizontal: 4,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
     },
     badgeText: {
-        color: storeTheme.textOnPrimary,
+        color: '#FFFFFF',
         fontSize: 9,
         fontWeight: '700',
+    },
+    controlsPanel: {
+        marginHorizontal: spacing.lg,
+        marginBottom: spacing.md,
     },
     searchWrap: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: spacing.md,
-        marginTop: spacing.md,
-        backgroundColor: storeTheme.surfaceSecondary,
-        borderRadius: borderRadius.md,
+        backgroundColor: '#F7FAFC',
+        borderRadius: borderRadius.lg,
+        borderWidth: 1,
+        borderColor: '#D7E3EA',
         paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
+        minHeight: 48,
     },
     searchInput: {
         flex: 1,
         marginHorizontal: spacing.sm,
         color: storeTheme.text,
-        fontSize: 14,
+        fontSize: 13,
     },
-    searchActionRow: {
-        alignItems: 'flex-end',
+    sortRow: {
+        paddingTop: spacing.md,
+        paddingBottom: spacing.xs,
+        gap: spacing.sm,
+    },
+    sortChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+        minHeight: 40,
+        borderRadius: borderRadius.md,
+        backgroundColor: '#F7FAFC',
+        borderWidth: 1,
+        borderColor: '#D7E3EA',
         paddingHorizontal: spacing.md,
-        marginTop: spacing.sm,
     },
-    searchButton: {
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs + 2,
-        borderRadius: borderRadius.sm,
-        backgroundColor: storeTheme.primary,
+    sortChipActive: {
+        backgroundColor: '#11263D',
+        borderColor: '#11263D',
     },
-    searchButtonText: {
-        color: storeTheme.textOnPrimary,
-        fontWeight: '600',
+    sortChipText: {
         fontSize: 12,
+        fontWeight: '600',
+        color: '#6A7E92',
+    },
+    sortChipTextActive: {
+        color: '#FFFFFF',
     },
     listContent: {
-        paddingHorizontal: spacing.md,
-        paddingTop: spacing.md,
+        paddingHorizontal: spacing.lg,
         paddingBottom: spacing.xl,
     },
     columnWrap: {
         justifyContent: 'space-between',
     },
     productCard: {
-        width: '48%',
-        backgroundColor: storeTheme.surface,
-        borderRadius: borderRadius.md,
-        padding: spacing.sm,
+        width: '48.4%',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
         borderWidth: 1,
-        borderColor: storeTheme.border,
-        marginBottom: spacing.md,
-    },
-    imageWrap: {
-        width: '100%',
-        height: 120,
-        borderRadius: borderRadius.sm,
+        borderColor: '#D4E1E8',
         overflow: 'hidden',
-        backgroundColor: storeTheme.surfaceSecondary,
-        marginBottom: spacing.sm,
+        marginBottom: spacing.md,
+        ...shadows.sm,
+    },
+    mediaWrap: {
+        height: 136,
+        padding: spacing.sm,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    badgeRow: {
+        position: 'absolute',
+        left: spacing.sm,
+        right: spacing.sm,
+        top: spacing.sm,
+        zIndex: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    discountBadge: {
+        paddingHorizontal: spacing.sm,
+        minHeight: 24,
+        borderRadius: borderRadius.full,
+        backgroundColor: '#FF5B5B',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    discountText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: '700',
+    },
+    stockBadge: {
+        paddingHorizontal: spacing.sm,
+        minHeight: 24,
+        borderRadius: borderRadius.full,
+        backgroundColor: '#1FB55D',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stockBadgeMuted: {
+        backgroundColor: '#8C9BA8',
+    },
+    stockText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: '600',
+    },
+    stockTextMuted: {
+        color: '#FFFFFF',
+    },
+    wishlistGhost: {
+        position: 'absolute',
+        top: spacing.sm,
+        right: spacing.sm,
+        width: 28,
+        height: 28,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.88)',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
+        zIndex: 6,
     },
     productImage: {
-        width: '100%',
-        height: '100%',
+        width: '72%',
+        height: '72%',
     },
     imageFallback: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -351,64 +556,92 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: storeTheme.textSecondary,
     },
-    productName: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: storeTheme.text,
-        minHeight: 34,
+    bodyWrap: {
+        paddingHorizontal: spacing.sm + 2,
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.sm + 2,
     },
-    productBrand: {
+    brandTag: {
+        fontSize: 10,
+        fontWeight: '600',
+        letterSpacing: 0.25,
+    },
+    productName: {
         marginTop: 2,
-        fontSize: 11,
-        color: storeTheme.textSecondary,
+        fontSize: 14,
+        lineHeight: 18,
+        fontWeight: '600',
+        color: '#132336',
+        minHeight: 40,
     },
     priceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginTop: spacing.xs,
+        flexDirection: 'row',
+        alignItems: 'baseline',
     },
     priceText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '700',
-        color: storeTheme.primary,
+        color: '#132336',
+        letterSpacing: -0.15,
     },
     mrpText: {
         marginLeft: spacing.xs,
         fontSize: 11,
-        color: storeTheme.textSecondary,
+        color: '#7F92A4',
         textDecorationLine: 'line-through',
+    },
+    savingsText: {
+        marginTop: 2,
+        fontSize: 11,
+        color: '#1A9E50',
+        fontWeight: '600',
+    },
+    savingsSpacer: {
+        height: 17,
     },
     addButton: {
         marginTop: spacing.sm,
-        minHeight: 34,
+        minHeight: 44,
+        borderRadius: borderRadius.md,
+        overflow: 'hidden',
+    },
+    addButtonGradient: {
+        minHeight: 44,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: borderRadius.sm,
-        backgroundColor: storeTheme.primary,
+    },
+    addButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
     },
     addButtonText: {
-        color: storeTheme.textOnPrimary,
-        fontSize: 12,
+        color: '#FFFFFF',
+        fontSize: 13,
         fontWeight: '700',
     },
     outOfStockButton: {
-        backgroundColor: storeTheme.surfaceSecondary,
+        backgroundColor: '#E5EDF2',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     outOfStockText: {
-        color: storeTheme.textSecondary,
+        color: '#6A7E92',
         fontSize: 12,
         fontWeight: '600',
     },
     centered: {
         flex: 1,
+        minHeight: 320,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: spacing.lg,
     },
     emptyTitle: {
         marginTop: spacing.sm,
-        fontSize: 16,
-        fontWeight: '700',
+        fontSize: 15,
+        fontWeight: '600',
         color: storeTheme.text,
     },
     emptySubtitle: {
@@ -419,19 +652,20 @@ const styles = StyleSheet.create({
     errorText: {
         marginTop: spacing.sm,
         textAlign: 'center',
-        fontSize: 15,
+        fontSize: 14,
         color: storeTheme.error || '#ef4444',
     },
     retryButton: {
         marginTop: spacing.md,
         paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.sm,
-        borderRadius: borderRadius.sm,
+        minHeight: 44,
+        borderRadius: borderRadius.full,
         backgroundColor: storeTheme.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     retryText: {
         color: storeTheme.textOnPrimary,
-        fontWeight: '700',
+        fontWeight: '600',
     },
 });
-

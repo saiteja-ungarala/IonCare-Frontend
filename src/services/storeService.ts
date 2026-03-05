@@ -19,6 +19,8 @@ export interface StoreBrand {
     slug: string;
     logo_url: string | null;
     logoUrl: string | null;
+    banner_url: string | null;
+    bannerUrl: string | null;
 }
 
 export interface StoreProduct {
@@ -92,6 +94,8 @@ const mapBrand = (raw: any): StoreBrand => ({
     slug: String(raw.slug || ''),
     logo_url: toNullableString(raw.logo_url ?? raw.logoUrl),
     logoUrl: toNullableString(raw.logo_url ?? raw.logoUrl),
+    banner_url: toNullableString(raw.banner_url ?? raw.bannerUrl),
+    bannerUrl: toNullableString(raw.banner_url ?? raw.bannerUrl),
 });
 
 const mapProduct = (raw: any): StoreProduct => {

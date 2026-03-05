@@ -55,9 +55,19 @@ const rewriteLocalAbsoluteUrl = (value: string): string => {
     }
 };
 
-export const resolveProductImageSource = (rawValue: string | null | undefined): ImageSourcePropType | null => {
+interface StoreMediaResolveOptions {
+    defaultUploadDir?: string;
+    allowKnownProductAliases?: boolean;
+}
+
+export const resolveStoreMediaSource = (
+    rawValue: string | null | undefined,
+    options?: StoreMediaResolveOptions,
+): ImageSourcePropType | null => {
     const value = String(rawValue || '').trim();
     if (!value) return null;
+    const defaultUploadDir = String(options?.defaultUploadDir || 'products').trim() || 'products';
+    const allowKnownProductAliases = options?.allowKnownProductAliases !== false;
 
     if (isAbsoluteUrl(value)) {
         if (value.startsWith('data:')) {
@@ -68,9 +78,9 @@ export const resolveProductImageSource = (rawValue: string | null | undefined): 
 
     const cleanPath = value.split('?')[0].split('#')[0].trim();
     const fileName = cleanPath.split('/').pop()?.toLowerCase() || '';
-    const mappedPath = FILE_NAME_TO_UPLOAD_PATH[fileName];
+    const mappedPath = allowKnownProductAliases ? FILE_NAME_TO_UPLOAD_PATH[fileName] : undefined;
     const stem = normalizeStem(fileName.replace(/\.[^.]+$/, ''));
-    const stemMappedPath = STEM_TO_UPLOAD_PATH[stem];
+    const stemMappedPath = allowKnownProductAliases ? STEM_TO_UPLOAD_PATH[stem] : undefined;
 
     let relativePath: string;
     if (mappedPath) {
@@ -82,9 +92,16 @@ export const resolveProductImageSource = (rawValue: string | null | undefined): 
     } else if (cleanPath.startsWith('/')) {
         relativePath = cleanPath;
     } else {
-        relativePath = `/uploads/products/${cleanPath}`;
+        relativePath = `/uploads/${defaultUploadDir}/${cleanPath}`;
     }
 
     const base = getUploadsBaseUrl();
     return { uri: base ? `${base}${relativePath}` : relativePath };
+};
+
+export const resolveProductImageSource = (rawValue: string | null | undefined): ImageSourcePropType | null => {
+    return resolveStoreMediaSource(rawValue, {
+        defaultUploadDir: 'products',
+        allowKnownProductAliases: true,
+    });
 };

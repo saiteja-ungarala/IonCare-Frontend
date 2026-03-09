@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Alert } from 'react-native';
 import {
     AgentJob,
     AgentJobsMeta,
@@ -7,6 +8,7 @@ import {
     AgentProfile,
 } from '../models/types';
 import { agentService } from '../services/agentService';
+import { getCurrentLocation } from '../utils/location';
 
 interface AgentLoadingState {
     me: boolean;
@@ -142,6 +144,23 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
             error: null,
         }));
 
+        // When going online, get location first and patch it before going online
+        if (isOnline) {
+            const position = await getCurrentLocation();
+            if (!position) {
+                set((state) => ({
+                    loading: { ...state.loading, online: false },
+                }));
+                Alert.alert('Location Required', 'Location required to go online. Please enable location in phone settings.');
+                return false;
+            }
+            try {
+                await agentService.updateLocation(position.latitude, position.longitude);
+            } catch {
+                // location patch failed — proceed anyway, backend will gate if needed
+            }
+        }
+
         try {
             await agentService.setOnline(isOnline);
             set((state) => ({
@@ -151,6 +170,10 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
             }));
             return true;
         } catch (error: any) {
+            const code = (error as any)?.response?.data?.code;
+            if (code === 'LOCATION_REQUIRED') {
+                Alert.alert('Location Required', 'Please enable location in phone settings.');
+            }
             set((state) => ({
                 loading: { ...state.loading, online: false },
                 error: extractErrorMessage(error, 'Failed to update online status.'),

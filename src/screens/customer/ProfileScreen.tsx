@@ -41,8 +41,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
     // Fetch real profile data on focus
     useFocusEffect(useCallback(() => {
-        profileService.getProfile().then((p) => {
-            if (p) {
+        let isActive = true;
+
+        profileService.getProfile()
+            .then((p) => {
+                if (!isActive || !p) return;
+
                 setReferralCode(p.referral_code || '');
                 setProfileName(p.full_name || 'User');
                 setProfilePhone(p.phone || '');
@@ -55,8 +59,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                         referralCode: p.referral_code,
                     } : s.user,
                 }));
-            }
-        });
+            })
+            .catch((error) => {
+                console.error('[ProfileScreen] Failed to load profile on focus:', error);
+            });
+
+        return () => {
+            isActive = false;
+        };
     }, []));
 
     const handleCopyReferral = async () => {

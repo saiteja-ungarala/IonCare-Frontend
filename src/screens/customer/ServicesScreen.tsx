@@ -52,10 +52,31 @@ export const ServicesScreen = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        catalogService.getServices().then((list) => {
-            setServices(list);
-            setLoading(false);
-        });
+        let isMounted = true;
+
+        const loadServices = async () => {
+            try {
+                const list = await catalogService.getServices();
+                if (isMounted) {
+                    setServices(list);
+                }
+            } catch (error) {
+                console.error('[ServicesScreen] Failed to load services:', error);
+                if (isMounted) {
+                    setServices([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadServices();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const handleServicePress = (service: Service) => {

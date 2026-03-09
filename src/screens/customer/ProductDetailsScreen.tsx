@@ -61,10 +61,6 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
         return ICON_MAP[slug] || 'cube';
     };
 
-    const discount = product && product.mrp > product.price
-        ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-        : 0;
-
     const handleAddToCart = async () => {
         if (!product) return;
         setAddingToCart(true);
@@ -127,6 +123,11 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
     }
 
     const inStock = product.stockQty > 0;
+    const mrp = product.mrp ?? product.price;
+    const hasDiscount = mrp > product.price;
+    const discount = hasDiscount
+        ? Math.round(((mrp - product.price) / mrp) * 100)
+        : 0;
     const imageSource = resolveProductImageSource(product.imageUrl);
 
     return (
@@ -188,11 +189,11 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                     {/* Price */}
                     <View style={styles.priceRow}>
                         <Text style={styles.price}>₹{Number(product.price).toLocaleString()}</Text>
-                        {product.mrp > product.price && (
-                            <Text style={styles.originalPrice}>₹{Number(product.mrp).toLocaleString()}</Text>
+                        {hasDiscount && (
+                            <Text style={styles.originalPrice}>₹{Number(mrp).toLocaleString()}</Text>
                         )}
                         {discount > 0 && (
-                            <Text style={styles.saveText}>You save ₹{(product.mrp - product.price).toLocaleString()}</Text>
+                            <Text style={styles.saveText}>You save ₹{(mrp - product.price).toLocaleString()}</Text>
                         )}
                     </View>
 

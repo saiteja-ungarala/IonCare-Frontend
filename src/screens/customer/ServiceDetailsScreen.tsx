@@ -105,18 +105,30 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
         setBooking(true);
         setBookingError(null);
         try {
-            await createBooking({
+            const newBooking = await createBooking({
                 service_id: Number(service.id),
                 address_id: Number(selectedAddress.id),
                 scheduled_date: selectedDate,
                 scheduled_time: selectedTime + ':00',
                 notes: undefined,
             });
-            // Show success and navigate back
-            setBookingSuccess(true);
-            setTimeout(() => {
-                navigation.goBack();
-            }, 2000);
+
+            const bookingId = newBooking ? Number(newBooking.id) : 0;
+            const bookingPrice = newBooking ? (newBooking.totalAmount ?? 0) : service.price;
+
+            if (bookingPrice > 0 && bookingId > 0) {
+                // Paid booking — go to payment screen
+                navigation.navigate('PaymentScreen', {
+                    amount: bookingPrice,
+                    entityType: 'booking',
+                    entityId: bookingId,
+                    description: service.name,
+                });
+            } else {
+                // First Service Free — show success overlay
+                setBookingSuccess(true);
+                setTimeout(() => navigation.goBack(), 2000);
+            }
         } catch (error: any) {
             console.error('[Booking] Error:', error);
             setBookingError(error.message || 'Booking failed. Please try again.');

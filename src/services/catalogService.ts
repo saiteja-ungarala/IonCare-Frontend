@@ -43,10 +43,10 @@ export const catalogService = {
     async getServices(): Promise<Service[]> {
         try {
             const response = await api.get('/services');
-            const { data } = response.data;
+            const data = response.data?.data;
 
             // Handle both array and paginated response formats
-            const list = Array.isArray(data) ? data : (data.list || data.services || []);
+            const list = Array.isArray(data) ? data : (data?.list || data?.services || []);
             return list.map(mapBackendService);
         } catch (error: any) {
             console.error('Error fetching services:', error.message);
@@ -70,10 +70,10 @@ export const catalogService = {
     async getProducts(): Promise<Product[]> {
         try {
             const response = await api.get('/products');
-            const { data } = response.data;
+            const data = response.data?.data;
 
             // Handle both array and paginated response formats
-            const list = Array.isArray(data) ? data : (data.list || data.products || []);
+            const list = Array.isArray(data) ? data : (data?.list || data?.products || []);
             return list.map(mapBackendProduct);
         } catch (error: any) {
             console.error('Error fetching products:', error.message);

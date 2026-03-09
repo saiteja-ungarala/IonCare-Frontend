@@ -85,6 +85,18 @@ export interface Booking {
     completedAt?: string;
 }
 
+export type BookingUpdateType = 'arrived' | 'diagnosed' | 'in_progress' | 'completed' | 'photo' | 'note';
+
+export interface BookingUpdate {
+    id: number;
+    booking_id: number;
+    agent_id: number;
+    update_type: BookingUpdateType;
+    note: string | null;
+    media_url: string | null;
+    created_at: string;
+}
+
 export type BookingStatus =
     | 'pending'
     | 'confirmed'
@@ -341,6 +353,10 @@ export type RootStackParamList = {
     Login: undefined;
     Signup: undefined;
     ForgotPassword: undefined;
+    OTPVerification: { phone: string };
+    PaymentScreen: { amount: number; entityType: 'booking' | 'order'; entityId: number; description: string };
+    BookingDetail: { bookingId: number };
+    BookingUpdate: { bookingId: number };
     CustomerTabs: undefined;
     Search: undefined;
     ServiceDetails: { service: Service };

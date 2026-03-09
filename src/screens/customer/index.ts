@@ -7,3 +7,5 @@ export { BookingsScreen } from './BookingsScreen';
 export { WalletScreen } from './WalletScreen';
 export { ProfileScreen } from './ProfileScreen';
 export { ServicesScreen } from './ServicesScreen';
+export { PaymentScreen } from './PaymentScreen';
+export { BookingDetailScreen } from './BookingDetailScreen';

@@ -8,6 +8,7 @@ import { RouteProp } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { profileService } from '../../services/profileService';
 import { Address, RootStackParamList } from '../../models/types';
+import { requestLocationPermission, getCurrentLocation, reverseGeocode } from '../../utils/location';
 
 type Props = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'AddEditAddress'>;
@@ -26,6 +27,35 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
     const [postalCode, setPostalCode] = useState(existing?.postal_code || '');
     const [isDefault, setIsDefault] = useState(existing?.is_default || false);
     const [saving, setSaving] = useState(false);
+    const [locating, setLocating] = useState(false);
+    const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+    const handleUseLocation = async () => {
+        const granted = await requestLocationPermission();
+        if (!granted) {
+            Alert.alert('Location Denied', 'Location denied. Fill address manually.');
+            return;
+        }
+        setLocating(true);
+        const position = await getCurrentLocation();
+        if (!position) {
+            setLocating(false);
+            Alert.alert('Location Error', 'Unable to get location. Fill manually.');
+            return;
+        }
+        setCoords(position);
+        const address = await reverseGeocode(position.latitude, position.longitude);
+        setLocating(false);
+        if (!address) {
+            Alert.alert('Geocode Error', 'Unable to fetch address. Fill manually.');
+            return;
+        }
+        setLine1(address.line1);
+        setCity(address.city);
+        setState(address.state);
+        setPostalCode(address.postal_code);
+    };
+
     const handleSave = async () => {
         if (!line1.trim() || !city.trim() || !state.trim() || !postalCode.trim()) {
             Alert.alert('Validation', 'Address line 1, city, state, and postal code are required.');
@@ -41,6 +71,7 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
                 state: state.trim(),
                 postal_code: postalCode.trim(),
                 is_default: isDefault,
+                ...(coords ? { lat: coords.latitude, lng: coords.longitude } : {}),
             };
 
             console.log('[AddAddress] Saving payload:', JSON.stringify(payload));
@@ -77,6 +108,21 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
             </View>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
                 <ScrollView style={styles.scroll} contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+                    <TouchableOpacity
+                        style={[styles.locationBtn, locating && { opacity: 0.6 }]}
+                        onPress={handleUseLocation}
+                        disabled={locating}
+                    >
+                        {locating ? (
+                            <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />
+                        ) : (
+                            <Ionicons name="location-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+                        )}
+                        <Text style={styles.locationBtnText}>
+                            {locating ? 'Getting location...' : 'Use My Current Location'}
+                        </Text>
+                    </TouchableOpacity>
+
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>Label</Text>
                         <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="e.g. Home, Office" placeholderTextColor={colors.textMuted} />
@@ -139,4 +185,6 @@ const styles = StyleSheet.create({
     switchSub: { ...typography.caption, color: colors.textSecondary },
     saveBtn: { backgroundColor: colors.primary, borderRadius: borderRadius.md, padding: spacing.md, alignItems: 'center' },
     saveBtnText: { ...typography.button, color: colors.textOnPrimary },
+    locationBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.primary, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.lg, backgroundColor: colors.surface },
+    locationBtnText: { ...typography.body, color: colors.primary, fontWeight: '600' },
 });

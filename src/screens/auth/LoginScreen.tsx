@@ -25,8 +25,11 @@ type LoginScreenProps = {
 };
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+    const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [phone, setPhone] = useState('');
+    const [phoneError, setPhoneError] = useState('');
     const [clientFieldErrors, setClientFieldErrors] = useState<Record<string, string>>({});
     const [localErrorMessage, setLocalErrorMessage] = useState<string | null>(null);
     const {
@@ -124,6 +127,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         }
     };
 
+    const handleSendOtp = async () => {
+        setPhoneError('');
+        clearError();
+
+        if (!/^\d{10}$/.test(phone)) {
+            setPhoneError('Please enter a valid 10-digit mobile number');
+            return;
+        }
+
+        if (!selectedRole) {
+            setLocalErrorMessage('Please select a role first.');
+            navigation.goBack();
+            return;
+        }
+
+        const success = await requestOTP(phone);
+        if (success) {
+            navigation.navigate('OTPVerification', { phone });
+        }
+    };
+
     const handleOtpLogin = async () => {
         setLocalErrorMessage(null);
         clearError();
@@ -200,11 +224,68 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                                     Login as <Text style={[styles.roleText, { color: activeThemeColor }]}>{getRoleLabel()}</Text>
                                 </Text>
 
+                                {/* Tab toggle */}
+                                <View style={[styles.tabToggle, isAgent ? styles.tabToggleDark : undefined]}>
+                                    <TouchableOpacity
+                                        style={[styles.tabBtn, activeTab === 'email' && { backgroundColor: activeThemeColor }]}
+                                        onPress={() => { setActiveTab('email'); setPhoneError(''); clearError(); }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Text style={[styles.tabBtnText, activeTab === 'email' && styles.tabBtnTextActive]}>
+                                            Email Login
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.tabBtn, activeTab === 'phone' && { backgroundColor: activeThemeColor }]}
+                                        onPress={() => { setActiveTab('phone'); clearError(); }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Text style={[styles.tabBtnText, activeTab === 'phone' && styles.tabBtnTextActive]}>
+                                            Phone Login
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
                                 <View style={styles.form}>
                                     <AuthErrorBanner
                                         message={localErrorMessage || errorMessage}
                                         onClose={dismissErrorBanner}
                                     />
+
+                                    {/* ── Phone Login Tab ── */}
+                                    {activeTab === 'phone' && (
+                                        <View>
+                                            <Input
+                                                label="Phone Number"
+                                                placeholder="Enter 10-digit mobile number"
+                                                value={phone}
+                                                onChangeText={(val) => {
+                                                    setPhone(val.replace(/\D/g, ''));
+                                                    if (phoneError) setPhoneError('');
+                                                    if (errorMessage) clearError();
+                                                }}
+                                                keyboardType="numeric"
+                                                maxLength={10}
+                                                leftIcon="phone-portrait-outline"
+                                                inputContainerStyle={isCustomLogin ? styles.transparentInput : undefined}
+                                                labelStyle={isAgent ? { color: colors.surface } : undefined}
+                                                placeholderTextColor={isAgent ? 'rgba(255, 255, 255, 0.6)' : undefined}
+                                            />
+                                            {phoneError ? (
+                                                <Text style={styles.phoneError}>{phoneError}</Text>
+                                            ) : null}
+                                            <Button
+                                                title="Send OTP"
+                                                onPress={handleSendOtp}
+                                                loading={isLoading}
+                                                fullWidth
+                                                style={{ backgroundColor: activeThemeColor, shadowColor: activeThemeColor, marginTop: spacing.xl }}
+                                            />
+                                        </View>
+                                    )}
+
+                                    {/* ── Email Login Tab ── */}
+                                    {activeTab === 'email' && <>
 
                                     <Input
                                         label="Email"
@@ -270,15 +351,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                                         style={{ borderColor: activeThemeColor }}
                                         textStyle={{ color: activeThemeColor }}
                                     />
+                                    </>}
                                 </View>
 
                                 <View style={styles.footer}>
-                                    <Text style={styles.footerText}>
-                                        Don't have an account?{' '}
+                                    <View style={styles.footerRow}>
+                                        <Text style={styles.footerText}>Don't have an account? </Text>
                                         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
                                             <Text style={[styles.footerLink, { color: activeThemeColor }]}>Sign Up</Text>
                                         </TouchableOpacity>
-                                    </Text>
+                                    </View>
                                 </View>
                             </View>
                         </View>
@@ -371,6 +453,10 @@ const styles = StyleSheet.create({
         marginTop: spacing.xxl,
         alignItems: 'center',
     },
+    footerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     footerText: {
         ...typography.body,
         color: colors.textSecondary,
@@ -409,5 +495,35 @@ const styles = StyleSheet.create({
     glassButton: {
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
     },
+    tabToggle: {
+        flexDirection: 'row',
+        backgroundColor: colors.surface2,
+        borderRadius: borderRadius.md,
+        padding: 3,
+        marginBottom: spacing.lg,
+    },
+    tabToggleDark: {
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    },
+    tabBtn: {
+        flex: 1,
+        paddingVertical: spacing.sm,
+        alignItems: 'center',
+        borderRadius: borderRadius.sm,
+    },
+    tabBtnText: {
+        ...typography.bodySmall,
+        fontWeight: '600',
+        color: colors.textMuted,
+    },
+    tabBtnTextActive: {
+        color: colors.surface,
+    },
+    phoneError: {
+        ...typography.caption,
+        color: colors.error,
+        marginTop: -spacing.sm,
+        marginBottom: spacing.sm,
+        marginLeft: spacing.xs,
+    },
 });
-

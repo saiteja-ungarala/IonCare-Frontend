@@ -7,3 +7,4 @@ export { AgentEarnScreen } from './AgentEarnScreen';
 export { AgentHistoryScreen } from './AgentHistoryScreen';
 export { AgentProfileScreen } from './AgentProfileScreen';
 export { CampaignMilestonesScreen } from './CampaignMilestonesScreen';
+export { BookingUpdateScreen } from './BookingUpdateScreen';

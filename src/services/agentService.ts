@@ -74,6 +74,10 @@ export const agentService = {
         return response.data.data;
     },
 
+    async updateLocation(lat: number, lng: number): Promise<void> {
+        await api.patch('/agent/location', { lat, lng });
+    },
+
     async setOnline(isOnline: boolean): Promise<{ is_online: boolean }> {
         const response = await api.patch<ApiSuccess<{ is_online: boolean }>>('/agent/online', {
             is_online: isOnline,
@@ -100,6 +104,14 @@ export const agentService = {
 
     async updateJobStatus(bookingId: string, status: 'in_progress' | 'completed'): Promise<void> {
         await api.patch(`/agent/jobs/${bookingId}/status`, { status });
+    },
+
+    async postJobUpdate(bookingId: number, payload: {
+        update_type: string;
+        note?: string;
+        media_url?: string;
+    }): Promise<void> {
+        await api.post(`/agent/jobs/${bookingId}/updates`, payload);
     },
 
     getApiErrorMessage,

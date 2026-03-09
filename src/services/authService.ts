@@ -197,17 +197,33 @@ export const authService = {
         }
     },
 
-    // Request OTP (placeholder for future implementation)
     async requestOTP(phone: string): Promise<boolean> {
-        void phone;
-        throw getApiErrorMessage({ message: 'OTP login not yet implemented' });
+        try {
+            await api.post('/auth/send-otp', { phone });
+            return true;
+        } catch (error: unknown) {
+            throw getApiErrorMessage(error);
+        }
     },
 
-    // Verify OTP (placeholder for future implementation)
     async verifyOTP(phone: string, otp: string, role: UserRole): Promise<{ user: User; token: string }> {
-        void phone;
-        void otp;
-        void role;
-        throw getApiErrorMessage({ message: 'OTP login not yet implemented' });
+        try {
+            const response = await api.post('/auth/verify-otp', { phone, otp });
+            const { data } = response.data;
+            const accessToken = data.accessToken;
+            const refreshToken = data.refreshToken;
+
+            const user = mapBackendUser(data.user, role);
+
+            await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+            if (refreshToken) {
+                await storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+            }
+            await storage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+
+            return { user, token: accessToken };
+        } catch (error: unknown) {
+            throw getApiErrorMessage(error);
+        }
     },
 };

@@ -1,6 +1,6 @@
 // Booking Service — API calls for service bookings
 import api from './api';
-import { Booking, Service, Address } from '../models/types';
+import { Booking, BookingUpdate, Service, Address } from '../models/types';
 
 // Map a backend booking row (with joined service + address) to the frontend Booking type
 const mapBackendBooking = (b: any): Booking => {
@@ -74,6 +74,30 @@ export const bookingService = {
         } catch (error: any) {
             console.error('Error creating booking:', error.message);
             throw new Error(error.response?.data?.message || 'Failed to create booking');
+        }
+    },
+
+    /** Fetch a single booking by id */
+    async getBookingById(id: number): Promise<Booking | null> {
+        try {
+            const response = await api.get(`/bookings/${id}`);
+            const { data } = response.data;
+            return mapBackendBooking(data);
+        } catch (error: any) {
+            console.error('Error fetching booking:', error.message);
+            return null;
+        }
+    },
+
+    /** Fetch timeline updates for a booking */
+    async getBookingUpdates(bookingId: number): Promise<BookingUpdate[]> {
+        try {
+            const response = await api.get(`/bookings/${bookingId}/updates`);
+            const { data } = response.data;
+            return Array.isArray(data) ? data : [];
+        } catch (error: any) {
+            console.error('Error fetching booking updates:', error.message);
+            return [];
         }
     },
 

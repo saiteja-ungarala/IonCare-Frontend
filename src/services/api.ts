@@ -1,53 +1,23 @@
 // Axios API configuration
 
 import axios from 'axios';
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { API_BASE_URL, STORAGE_KEYS } from '../config/constants';
+import { STORAGE_KEYS } from '../config/constants';
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.9:3000/api';
+axios.defaults.timeout = 10000;
 
 // Log API base URL at startup
-console.log('[API] Base URL:', API_BASE_URL);
+console.log('[API] Base URL:', BASE_URL);
 
 const api = axios.create({
-    baseURL: API_BASE_URL,
-    timeout: 10000,
+    baseURL: BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
     },
 });
-
-const normalizeBaseUrl = (url: string): string => url.trim().replace(/\/+$/, '');
-
-const getApiFallbackBaseUrls = (currentBaseUrl?: string): string[] => {
-    const urls = new Set<string>();
-
-    if (Platform.OS === 'web') {
-        if (typeof window !== 'undefined' && window.location?.hostname) {
-            urls.add(`http://${window.location.hostname}:3000/api`);
-        }
-        urls.add('http://localhost:3000/api');
-        urls.add('http://127.0.0.1:3000/api');
-    } else {
-        const scriptURL: string | undefined = NativeModules?.SourceCode?.scriptURL;
-        const match = scriptURL?.match(/^https?:\/\/([^/:]+)/i);
-        if (match?.[1]) {
-            urls.add(`http://${match[1]}:3000/api`);
-        }
-        urls.add('http://10.0.2.2:3000/api');
-        urls.add('http://localhost:3000/api');
-    }
-
-    if (currentBaseUrl) {
-        const normalizedCurrent = normalizeBaseUrl(currentBaseUrl);
-        for (const candidate of Array.from(urls)) {
-            if (normalizeBaseUrl(candidate) === normalizedCurrent) {
-                urls.delete(candidate);
-            }
-        }
-    }
-
-    return Array.from(urls);
-};
 
 // Storage helper for cross-platform token retrieval
 const getStoredToken = async (): Promise<string | null> => {
@@ -94,49 +64,34 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling + GET retry on network error
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalConfig = error?.config as any;
-        const isNetworkTimeout =
-            !error.response &&
-            (
-                error.code === 'ECONNABORTED' ||
-                String(error.message || '').toLowerCase().includes('timeout') ||
-                String(error.message || '').toLowerCase().includes('network error')
-            );
-
-        if (isNetworkTimeout && originalConfig && !originalConfig._connectionRetryAttempted) {
-            originalConfig._connectionRetryAttempted = true;
-            const currentBaseUrl = originalConfig.baseURL || api.defaults.baseURL || API_BASE_URL;
-            const fallbackBaseUrls = getApiFallbackBaseUrls(currentBaseUrl);
-
-            for (const fallbackBaseUrl of fallbackBaseUrls) {
-                try {
-                    console.warn('[API] Request timed out. Retrying with fallback base URL:', fallbackBaseUrl);
-                    const response = await api.request({
-                        ...originalConfig,
-                        baseURL: fallbackBaseUrl,
-                        _connectionRetryAttempted: true,
-                    });
-                    api.defaults.baseURL = fallbackBaseUrl;
-                    console.log('[API] Switched default base URL to:', fallbackBaseUrl);
-                    return response;
-                } catch (retryError: any) {
-                    if (retryError?.response) {
-                        return Promise.reject(retryError);
-                    }
-                }
-            }
-        }
-
         if (error.response?.status === 401) {
             // Token expired or invalid - clear storage and redirect to login
             await clearStoredTokens();
             console.log('[API] 401 received - tokens cleared');
             // Navigation to login will be handled by auth state change
+            return Promise.reject(error);
         }
+
+        const config = error.config as typeof error.config & { _retryCount?: number };
+        const isNetworkError = !error.response;
+        const isGet = config?.method?.toLowerCase() === 'get';
+
+        if (isNetworkError && isGet && config) {
+            config._retryCount = (config._retryCount ?? 0) + 1;
+            if (config._retryCount <= MAX_RETRIES) {
+                console.log(`[API] Network error — retry ${config._retryCount}/${MAX_RETRIES}`);
+                await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+                return api(config);
+            }
+        }
+
         return Promise.reject(error);
     }
 );

@@ -183,18 +183,19 @@ export const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
                 await AsyncStorage.setItem(REFERRAL_CODE_STORAGE_KEY, validReferralCode);
             }
 
-            setOrderId(String(result.orderId));
+            const createdOrderId = result.orderId;
+            setOrderId(String(createdOrderId));
             setCheckoutModalVisible(false);
-            setCheckoutSuccess(true);
+            clearLocalCart();
+            fetchCart();
 
-            // Clear cart and navigate after delay
-            setTimeout(() => {
-                clearLocalCart();
-                fetchCart();
-                setCheckoutSuccess(false);
-                // Navigate to customer order history after successful checkout
-                navigation.navigate('OrderHistory', { enableBack: true });
-            }, 2500);
+            // Go to payment screen to complete payment
+            navigation.navigate('PaymentScreen', {
+                amount: finalTotal,
+                entityType: 'order',
+                entityId: createdOrderId,
+                description: 'AquaCare Order',
+            });
         } catch (error: any) {
             console.error(error);
             setCheckoutError(error.response?.data?.message || 'Checkout failed');

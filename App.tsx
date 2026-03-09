@@ -1,13 +1,13 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-import { RoleSelectionScreen, LoginScreen, SignupScreen, ForgotPasswordScreen } from './src/screens/auth';
-import { CustomerHomeScreen, ServiceDetailsScreen, ProductDetailsScreen, WalletScreen, ServicesScreen } from './src/screens/customer';
+import { RoleSelectionScreen, LoginScreen, SignupScreen, ForgotPasswordScreen, OTPVerificationScreen } from './src/screens/auth';
+import { CustomerHomeScreen, ServiceDetailsScreen, ProductDetailsScreen, WalletScreen, ServicesScreen, PaymentScreen, BookingDetailScreen } from './src/screens/customer';
 import { SearchScreen } from './src/screens/customer/SearchScreen';
 import { CartScreen } from './src/screens/customer/CartScreen';
 import { BookingsScreen } from './src/screens/customer/BookingsScreen';
@@ -35,6 +35,7 @@ import {
     AgentKycUploadScreen,
     AgentProfileScreen,
     CampaignMilestonesScreen,
+    BookingUpdateScreen,
 } from './src/screens/agent';
 import {
     DealerEntryScreen,
@@ -55,6 +56,41 @@ import { dealerTheme } from './src/theme/dealerTheme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
+
+type AppErrorBoundaryState = {
+    hasError: boolean;
+};
+
+class AppErrorBoundary extends React.Component<React.PropsWithChildren, AppErrorBoundaryState> {
+    state: AppErrorBoundaryState = { hasError: false };
+
+    static getDerivedStateFromError(): AppErrorBoundaryState {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error('[AppErrorBoundary] Unhandled render error:', error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorTitle}>Something went wrong</Text>
+                    <Text style={styles.errorSubtitle}>Please restart the app.</Text>
+                    <TouchableOpacity
+                        style={styles.errorRetry}
+                        onPress={() => this.setState({ hasError: false })}
+                    >
+                        <Text style={styles.errorRetryText}>Try Again</Text>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+
+        return this.props.children;
+    }
+}
 
 function StoreStack() {
     return (
@@ -231,6 +267,7 @@ function AuthStack() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
         </Stack.Navigator>
     );
 }
@@ -255,6 +292,8 @@ function CustomerStack() {
             <Stack.Screen name="ContactUs" component={ContactUsScreen} />
             <Stack.Screen name="Terms" component={TermsScreen} />
             <Stack.Screen name="Privacy" component={PrivacyScreen} />
+            <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
+            <Stack.Screen name="BookingDetail" component={BookingDetailScreen} />
         </Stack.Navigator>
     );
 }
@@ -326,8 +365,43 @@ export default function App() {
     const navigatorKey = isAuthenticated ? user?.role || 'auth' : 'auth';
 
     return (
-        <SafeAreaProvider>
-            <NavigationContainer key={navigatorKey}>{renderStack()}</NavigationContainer>
-        </SafeAreaProvider>
+        <AppErrorBoundary>
+            <SafeAreaProvider>
+                <NavigationContainer key={navigatorKey}>{renderStack()}</NavigationContainer>
+            </SafeAreaProvider>
+        </AppErrorBoundary>
     );
 }
+
+const styles = StyleSheet.create({
+    errorContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        backgroundColor: '#FFFFFF',
+    },
+    errorTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#111827',
+        marginBottom: 8,
+    },
+    errorSubtitle: {
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+    },
+    errorRetry: {
+        marginTop: 20,
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        backgroundColor: '#00C2B3',
+        borderRadius: 8,
+    },
+    errorRetryText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+});

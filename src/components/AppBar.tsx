@@ -1,10 +1,10 @@
 // AppBar Component - Top navigation bar with location and actions
-// Modern Viral India Aesthetic
+// Premium, spacious header with large touch targets
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '../theme/theme';
+import { colors, spacing, typography, borderRadius } from '../theme/theme';
 
 interface AppBarProps {
     location?: string;
@@ -32,32 +32,44 @@ export const AppBar: React.FC<AppBarProps> = ({
     return (
         <View style={[styles.container, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
             {/* Location Selector */}
-            <TouchableOpacity style={styles.locationButton} onPress={onLocationPress}>
-                <Ionicons name="location" size={18} color={theme.primary} />
-                <View style={styles.locationTextContainer}>
-                    <Text style={[styles.locationLabel, { color: theme.textMuted }]}>Deliver to</Text>
-                    <Text style={[styles.locationText, { color: theme.text }]} numberOfLines={1}>
-                        {location}
-                    </Text>
+            <TouchableOpacity style={styles.locationButton} onPress={onLocationPress} activeOpacity={0.7}>
+                <View style={[styles.locationIcon, { backgroundColor: theme.primaryLight || theme.primary + '15' }]}>
+                    <Ionicons name="location" size={20} color={theme.primary} />
                 </View>
-                <Ionicons name="chevron-down" size={16} color={theme.textSecondary} />
+                <View style={styles.locationTextContainer}>
+                    <Text style={[styles.locationLabel, { color: theme.textMuted }]}>DELIVER TO</Text>
+                    <View style={styles.locationRow}>
+                        <Text style={[styles.locationText, { color: theme.text }]} numberOfLines={1}>
+                            {location}
+                        </Text>
+                        <Ionicons name="chevron-down" size={16} color={theme.textSecondary} style={{ marginLeft: 4 }} />
+                    </View>
+                </View>
             </TouchableOpacity>
 
             {/* Actions */}
             <View style={styles.actions}>
                 {/* Profile */}
                 {onProfilePress && (
-                    <TouchableOpacity style={styles.iconButton} onPress={onProfilePress}>
-                        <Ionicons name="person-circle-outline" size={26} color={theme.primary} />
+                    <TouchableOpacity
+                        style={[styles.iconButton, { backgroundColor: theme.primaryLight || theme.primary + '12' }]}
+                        onPress={onProfilePress}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="person-circle" size={24} color={theme.primary} />
                     </TouchableOpacity>
                 )}
 
                 {/* Notifications */}
-                <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
+                <TouchableOpacity
+                    style={[styles.iconButton, { backgroundColor: theme.primaryLight || theme.primary + '12' }]}
+                    onPress={onNotificationPress}
+                    activeOpacity={0.7}
+                >
                     <Ionicons name="notifications-outline" size={22} color={theme.primary} />
                     {notificationCount > 0 && (
                         <View style={[styles.badge, { backgroundColor: theme.error }]}>
-                            <Text style={[styles.badgeText, { color: theme.textOnPrimary }]}>
+                            <Text style={styles.badgeText}>
                                 {notificationCount > 9 ? '9+' : notificationCount}
                             </Text>
                         </View>
@@ -66,11 +78,15 @@ export const AppBar: React.FC<AppBarProps> = ({
 
                 {/* Cart */}
                 {onCartPress && (
-                    <TouchableOpacity style={styles.iconButton} onPress={onCartPress}>
+                    <TouchableOpacity
+                        style={[styles.iconButton, { backgroundColor: theme.primaryLight || theme.primary + '12' }]}
+                        onPress={onCartPress}
+                        activeOpacity={0.7}
+                    >
                         <Ionicons name="cart-outline" size={22} color={theme.primary} />
                         {cartCount > 0 && (
                             <View style={[styles.badge, { backgroundColor: theme.error }]}>
-                                <Text style={[styles.badgeText, { color: theme.textOnPrimary }]}>
+                                <Text style={styles.badgeText}>
                                     {cartCount > 9 ? '9+' : cartCount}
                                 </Text>
                             </View>
@@ -88,7 +104,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
+        paddingVertical: spacing.md + 4,
         backgroundColor: colors.surface,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
@@ -97,54 +113,71 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
+        maxWidth: '58%',
         marginRight: spacing.md,
         paddingVertical: spacing.xs,
+        minHeight: 48,
+    },
+    locationIcon: {
+        width: 42,
+        height: 42,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.sm,
     },
     locationTextContainer: {
-        marginLeft: spacing.xs,
         flex: 1,
+        flexShrink: 1,
     },
     locationLabel: {
-        ...typography.caption,
-        color: colors.textMuted,
         fontSize: 10,
+        color: colors.textMuted,
         textTransform: 'uppercase',
-        fontWeight: '600',
+        fontWeight: '700',
+        letterSpacing: 1,
+        marginBottom: 2,
+    },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     locationText: {
-        ...typography.bodySmall,
+        fontSize: 15,
         color: colors.text,
-        fontWeight: '600',
+        fontWeight: '700',
+        flexShrink: 1,
     },
     actions: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
+        gap: spacing.sm,
     },
     iconButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
+        width: 44,
+        height: 44,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
     },
     badge: {
         position: 'absolute',
-        top: 4,
-        right: 4,
+        top: 0,
+        right: 0,
         backgroundColor: colors.error,
         borderRadius: borderRadius.full,
-        minWidth: 16,
-        height: 16,
+        minWidth: 18,
+        height: 18,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 4,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
     },
     badgeText: {
-        ...typography.caption,
-        color: colors.textOnPrimary,
-        fontSize: 10,
+        color: '#FFFFFF',
+        fontSize: 9,
         fontWeight: '700',
     },
 });

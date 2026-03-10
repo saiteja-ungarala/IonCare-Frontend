@@ -1,6 +1,6 @@
 // Type definitions for the Water Services App
 
-export type UserRole = 'customer' | 'agent' | 'dealer';
+export type UserRole = 'customer' | 'agent' | 'dealer' | 'admin';
 
 export interface User {
     id: string;

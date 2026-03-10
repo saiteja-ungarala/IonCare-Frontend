@@ -7,6 +7,7 @@ import {
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
+    Alert,
     Image,
     Modal,
     RefreshControl,
@@ -15,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackScreenProps, Booking, BookingUpdate, BookingUpdateType } from '../../models/types';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { bookingService } from '../../services/bookingService';
+import { CancelReasonModal } from '../../components/CancelReasonModal';
 
 type Props = RootStackScreenProps<'BookingDetail'>;
 
@@ -80,11 +82,13 @@ const formatTimestamp = (ts: string) => {
 export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     const { bookingId } = route.params;
 
-    const [booking, setBooking] = useState<Booking | null>(null);
-    const [updates, setUpdates] = useState<BookingUpdate[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [booking, setBooking]       = useState<Booking | null>(null);
+    const [updates, setUpdates]       = useState<BookingUpdate[]>([]);
+    const [loading, setLoading]       = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [photoModal, setPhotoModal] = useState<string | null>(null);
+    const [cancelModal, setCancelModal] = useState(false);
+    const [cancelling, setCancelling]   = useState(false);
 
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -111,7 +115,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
     useEffect(() => { load(); }, [load]);
 
-    // Auto-refresh every 30s while not completed
+    // Auto-refresh every 30s while not in a terminal state
     useEffect(() => {
         if (booking?.status === 'completed' || booking?.status === 'cancelled') {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -121,6 +125,26 @@ export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [booking?.status, fetchAll]);
 
+    const handleCancelConfirm = async (reason: string) => {
+        if (!booking) return;
+        setCancelling(true);
+        try {
+            const result = await bookingService.cancelBooking(booking.id, reason);
+            setCancelModal(false);
+            // Re-fetch so status reflects cancelled
+            await fetchAll();
+            const message = result.refunded && result.refund_amount > 0
+                ? `Your booking has been cancelled and ₹${result.refund_amount} has been refunded to your wallet.`
+                : 'Your booking has been cancelled successfully.';
+            Alert.alert('Booking Cancelled', message, [{ text: 'OK' }]);
+        } catch (err: any) {
+            Alert.alert('Error', err?.message || 'Failed to cancel booking. Please try again.');
+        } finally {
+            setCancelling(false);
+        }
+    };
+
+    const canCancel = booking?.status === 'pending' || booking?.status === 'confirmed';
     const statusCfg = STATUS_CONFIG[booking?.status ?? ''] ?? { label: booking?.status ?? '', color: '#9CA3AF' };
 
     if (loading) {
@@ -249,7 +273,6 @@ export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
                             return (
                                 <View key={upd.id} style={styles.timelineItem}>
-                                    {/* Line connector */}
                                     <View style={styles.timelineLeft}>
                                         <View style={[styles.timelineDot, { backgroundColor: tintColor }]}>
                                             <Ionicons name={icon} size={14} color="#fff" />
@@ -272,7 +295,27 @@ export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                         })}
                     </View>
                 )}
+
+                {/* Cancel button — only for pending / confirmed */}
+                {canCancel && (
+                    <TouchableOpacity
+                        style={styles.cancelBtn}
+                        onPress={() => setCancelModal(true)}
+                    >
+                        <Ionicons name="close-circle-outline" size={18} color={colors.error} />
+                        <Text style={styles.cancelBtnText}>Cancel Booking</Text>
+                    </TouchableOpacity>
+                )}
             </ScrollView>
+
+            {/* Cancel reason modal (shared component) */}
+            <CancelReasonModal
+                visible={cancelModal}
+                type="booking"
+                loading={cancelling}
+                onClose={() => setCancelModal(false)}
+                onConfirm={handleCancelConfirm}
+            />
 
             {/* Fullscreen photo modal */}
             <Modal visible={!!photoModal} transparent animationType="fade">
@@ -413,7 +456,20 @@ const styles = StyleSheet.create({
         backgroundColor: colors.surface2,
     },
 
-    // Fullscreen photo
+    cancelBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.xs,
+        marginTop: spacing.lg,
+        paddingVertical: spacing.md,
+        borderRadius: borderRadius.lg,
+        borderWidth: 1.5,
+        borderColor: colors.error,
+        backgroundColor: colors.error + '0D',
+    },
+    cancelBtnText: { ...typography.body, color: colors.error, fontWeight: '700' },
+
     photoModal: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.92)',

@@ -1,10 +1,16 @@
 // ProductCard component for displaying products
+// Premium design with responsive sizing
 
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, borderRadius, spacing, typography, shadows } from '../theme/theme';
 import { Product } from '../models/types';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_GAP = spacing.md;
+const CARD_HORIZONTAL_PAD = spacing.lg * 2;
+const PRODUCT_CARD_WIDTH = (SCREEN_WIDTH - CARD_HORIZONTAL_PAD - CARD_GAP) / 2;
 
 interface ProductCardProps {
     product: Product;
@@ -25,34 +31,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
         : 0;
 
-    // Get icon based on category
     const getIcon = (): keyof typeof Ionicons.glyphMap => {
         switch (product.category) {
-            case 'water_purifier':
-                return 'water';
-            case 'water_softener':
-                return 'beaker';
-            case 'water_ionizer':
-                return 'flash';
-            default:
-                return 'cube';
+            case 'water_purifier': return 'water';
+            case 'water_softener': return 'beaker';
+            case 'water_ionizer': return 'flash';
+            default: return 'cube';
         }
     };
 
     return (
         <TouchableOpacity
-            style={styles.container}
+            style={[styles.container, { width: PRODUCT_CARD_WIDTH }]}
             onPress={onPress}
             activeOpacity={0.7}
         >
             {discount > 0 && (
-                <View style={[styles.discountBadge, { backgroundColor: theme.warning }]}>
-                    <Text style={[styles.discountText, { color: theme.textOnPrimary }]}>{discount}% OFF</Text>
+                <View style={[styles.discountBadge, { backgroundColor: '#FF7043' }]}>
+                    <Text style={styles.discountText}>{discount}% OFF</Text>
                 </View>
             )}
 
-            <View style={[styles.imageContainer, { backgroundColor: theme.surfaceSecondary }]}>
-                <Ionicons name={getIcon()} size={48} color={theme.primary} />
+            <View style={[styles.imageContainer, { backgroundColor: theme.surfaceSecondary || '#F3F4F6' }]}>
+                <View style={styles.iconCircle}>
+                    <Ionicons name={getIcon()} size={36} color={theme.primary} />
+                </View>
             </View>
 
             <View style={styles.content}>
@@ -61,15 +64,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </Text>
 
                 <View style={styles.ratingContainer}>
-                    <Ionicons name="star" size={14} color={theme.secondary || theme.info} />
+                    <Ionicons name="star" size={13} color="#F59E0B" />
                     <Text style={[styles.rating, { color: theme.text }]}>{product.rating}</Text>
                     <Text style={[styles.reviewCount, { color: theme.textSecondary }]}>({product.reviewCount})</Text>
                 </View>
 
                 <View style={styles.priceContainer}>
-                    <Text style={[styles.price, { color: theme.primary }]}>₹{product.price.toLocaleString()}</Text>
+                    <Text style={[styles.price, { color: theme.primary }]} numberOfLines={1}>
+                        ₹{product.price.toLocaleString()}
+                    </Text>
                     {product.originalPrice && (
-                        <Text style={[styles.originalPrice, { color: theme.textSecondary }]}>
+                        <Text style={[styles.originalPrice, { color: theme.textSecondary }]} numberOfLines={1}>
                             ₹{product.originalPrice.toLocaleString()}
                         </Text>
                     )}
@@ -77,13 +82,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {onAddToCart && (
                     <TouchableOpacity
-                        style={styles.addButton}
+                        style={[styles.addButton, { backgroundColor: theme.primary }]}
                         onPress={(e) => {
                             e.stopPropagation();
                             onAddToCart();
                         }}
                     >
-                        <Ionicons name="add" size={20} color={theme.textOnPrimary} />
+                        <Ionicons name="add" size={18} color="#FFFFFF" />
                     </TouchableOpacity>
                 )}
             </View>
@@ -93,81 +98,96 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        width: '48%',
         backgroundColor: colors.surface,
         borderRadius: borderRadius.lg,
         overflow: 'hidden',
-        ...shadows.sm,
-        marginBottom: spacing.md,
+        marginBottom: 0,
+        shadowColor: 'rgba(0, 0, 0, 0.08)',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 12,
+        elevation: 4,
     },
     discountBadge: {
         position: 'absolute',
         top: spacing.sm,
         left: spacing.sm,
-        backgroundColor: colors.error,
         paddingHorizontal: spacing.sm,
-        paddingVertical: 2,
-        borderRadius: borderRadius.sm,
+        paddingVertical: 3,
+        borderRadius: 8,
         zIndex: 1,
     },
     discountText: {
-        ...typography.caption,
-        fontWeight: '700',
-        color: colors.textOnPrimary,
+        fontSize: 10,
+        fontWeight: '800',
+        color: '#FFFFFF',
+        letterSpacing: 0.3,
     },
     imageContainer: {
-        height: 120,
-        backgroundColor: colors.surfaceSecondary,
+        height: 110,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconCircle: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: 'rgba(255,255,255,0.7)',
         alignItems: 'center',
         justifyContent: 'center',
     },
     content: {
         padding: spacing.md,
+        paddingTop: spacing.sm,
     },
     name: {
-        ...typography.bodySmall,
+        fontSize: 13,
         fontWeight: '600',
         color: colors.text,
         marginBottom: spacing.xs,
+        lineHeight: 18,
     },
     ratingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: spacing.sm,
+        marginBottom: spacing.xs,
     },
     rating: {
-        ...typography.caption,
+        fontSize: 12,
         fontWeight: '600',
         color: colors.text,
-        marginLeft: 4,
+        marginLeft: 3,
     },
     reviewCount: {
-        ...typography.caption,
+        fontSize: 11,
         color: colors.textSecondary,
         marginLeft: 2,
     },
     priceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.sm,
+        gap: spacing.xs,
+        flexWrap: 'nowrap',
     },
     price: {
-        ...typography.body,
+        fontSize: 15,
         fontWeight: '700',
         color: colors.primary,
+        flexShrink: 0,
     },
     originalPrice: {
-        ...typography.caption,
+        fontSize: 12,
         color: colors.textSecondary,
         textDecorationLine: 'line-through',
+        flexShrink: 1,
     },
     addButton: {
         position: 'absolute',
         right: spacing.sm,
         bottom: spacing.sm,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 30,
+        height: 30,
+        borderRadius: 10,
         backgroundColor: colors.primary,
         alignItems: 'center',
         justifyContent: 'center',

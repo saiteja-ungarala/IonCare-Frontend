@@ -8,10 +8,13 @@ import {
     Modal,
     ActivityIndicator,
     Platform,
+    ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackScreenProps } from '../../models/types';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { paymentService } from '../../services/paymentService';
 
@@ -117,8 +120,8 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
         return (
             <SafeAreaView style={styles.container}>
                 <View style={styles.successContainer}>
-                    <View style={[styles.successIcon, { backgroundColor: TEAL + '20' }]}>
-                        <Ionicons name="checkmark-circle" size={72} color={TEAL} />
+                    <View style={styles.successCircle}>
+                        <Ionicons name="checkmark-circle" size={80} color={TEAL} />
                     </View>
                     <Text style={styles.successTitle}>Payment Successful!</Text>
                     <Text style={styles.successSub}>
@@ -145,50 +148,98 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
                     <Ionicons name="arrow-back" size={22} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Complete Payment</Text>
-                <View style={{ width: 40 }} />
+                <View style={{ width: 44 }} />
             </View>
 
-            <View style={styles.content}>
-                {/* Payment card */}
-                <View style={styles.card}>
-                    <View style={styles.cardIconRow}>
-                        <View style={[styles.cardIcon, { backgroundColor: TEAL + '18' }]}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                {/* Amount Hero Card */}
+                <View style={styles.amountHeroCard}>
+                    <LinearGradient
+                        colors={['#0D9488', '#14B8A6']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.amountHeroGradient}
+                    >
+                        <Text style={styles.amountHeroLabel}>Total Amount</Text>
+                        <Text style={styles.amountHeroValue}>₹{amount.toLocaleString('en-IN')}</Text>
+                        <View style={styles.amountHeroBadge}>
+                            <Ionicons name="shield-checkmark" size={14} color={TEAL} />
+                            <Text style={styles.amountHeroBadgeText}>Secured by Razorpay</Text>
+                        </View>
+                    </LinearGradient>
+                </View>
+
+                {/* Order Details Card */}
+                <View style={styles.detailsCard}>
+                    <Text style={styles.detailsCardTitle}>Order Details</Text>
+
+                    <View style={styles.detailRow}>
+                        <View style={[styles.detailIcon, { backgroundColor: TEAL + '15' }]}>
                             <Ionicons
                                 name={entityType === 'booking' ? 'construct' : 'cube'}
-                                size={28}
+                                size={22}
                                 color={TEAL}
                             />
                         </View>
-                        <View style={styles.cardEntityBadge}>
-                            <Text style={[styles.cardEntityText, { color: TEAL }]}>
+                        <View style={styles.detailContent}>
+                            <Text style={styles.detailLabel}>
                                 {entityType === 'booking' ? 'Service Booking' : 'Product Order'}
                             </Text>
+                            <Text style={styles.detailValue} numberOfLines={2}>{description}</Text>
                         </View>
                     </View>
 
-                    <Text style={styles.cardDescription}>{description}</Text>
+                    <View style={styles.detailDivider} />
 
-                    <View style={styles.amountRow}>
-                        <Text style={styles.amountLabel}>Amount to Pay</Text>
-                        <Text style={styles.amountValue}>₹{amount.toLocaleString('en-IN')}</Text>
+                    <View style={styles.detailRow}>
+                        <View style={[styles.detailIcon, { backgroundColor: '#F59E0B15' }]}>
+                            <Ionicons name="receipt-outline" size={22} color="#F59E0B" />
+                        </View>
+                        <View style={styles.detailContent}>
+                            <Text style={styles.detailLabel}>Amount</Text>
+                            <Text style={styles.detailValue}>₹{amount.toLocaleString('en-IN')}</Text>
+                        </View>
                     </View>
 
-                    <View style={styles.divider} />
+                    <View style={styles.detailDivider} />
 
-                    <View style={styles.infoRow}>
-                        <Ionicons name="shield-checkmark" size={16} color={colors.success} />
-                        <Text style={styles.infoText}>Secured by Razorpay · 256-bit SSL</Text>
+                    <View style={styles.detailRow}>
+                        <View style={[styles.detailIcon, { backgroundColor: '#6366F115' }]}>
+                            <Ionicons name="person-outline" size={22} color="#6366F1" />
+                        </View>
+                        <View style={styles.detailContent}>
+                            <Text style={styles.detailLabel}>Customer</Text>
+                            <Text style={styles.detailValue} numberOfLines={1}>{user?.name || 'You'}</Text>
+                        </View>
                     </View>
                 </View>
 
-                {/* Payment methods badge */}
-                <View style={styles.methodsRow}>
-                    <Ionicons name="card-outline" size={18} color={colors.textMuted} />
-                    <Text style={styles.methodsText}>
-                        UPI · Cards · Net Banking · Wallets accepted
-                    </Text>
+                {/* Payment methods */}
+                <View style={styles.methodsCard}>
+                    <Text style={styles.methodsTitle}>Accepted Payment Methods</Text>
+                    <View style={styles.methodsGrid}>
+                        {[
+                            { icon: 'phone-portrait-outline', label: 'UPI' },
+                            { icon: 'card-outline', label: 'Cards' },
+                            { icon: 'business-outline', label: 'Net Banking' },
+                            { icon: 'wallet-outline', label: 'Wallets' },
+                        ].map((method, i) => (
+                            <View key={i} style={styles.methodItem}>
+                                <View style={styles.methodIconWrap}>
+                                    <Ionicons name={method.icon as any} size={20} color={TEAL} />
+                                </View>
+                                <Text style={styles.methodLabel}>{method.label}</Text>
+                            </View>
+                        ))}
+                    </View>
                 </View>
-            </View>
+
+                {/* Security info */}
+                <View style={styles.securityRow}>
+                    <Ionicons name="lock-closed" size={14} color={colors.textMuted} />
+                    <Text style={styles.securityText}>256-bit SSL encrypted · PCI DSS compliant</Text>
+                </View>
+            </ScrollView>
 
             {/* Pay Now button */}
             <View style={styles.footer}>
@@ -198,14 +249,24 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
                     disabled={isBusy}
                     activeOpacity={0.85}
                 >
-                    {isBusy ? (
-                        <View style={styles.payButtonInner}>
-                            <ActivityIndicator color="#fff" size="small" />
-                            <Text style={styles.payButtonText}>{getButtonLabel()}</Text>
-                        </View>
-                    ) : (
-                        <Text style={styles.payButtonText}>Pay Now — ₹{amount.toLocaleString('en-IN')}</Text>
-                    )}
+                    <LinearGradient
+                        colors={['#0D9488', '#14B8A6']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.payButtonGradient}
+                    >
+                        {isBusy ? (
+                            <View style={styles.payButtonInner}>
+                                <ActivityIndicator color="#fff" size="small" />
+                                <Text style={styles.payButtonText}>{getButtonLabel()}</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.payButtonInner}>
+                                <Ionicons name="shield-checkmark" size={20} color="#FFFFFF" />
+                                <Text style={styles.payButtonText}>Pay Now — ₹{amount.toLocaleString('en-IN')}</Text>
+                            </View>
+                        )}
+                    </LinearGradient>
                 </TouchableOpacity>
             </View>
 
@@ -214,7 +275,7 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalCard}>
                         <View style={styles.modalIconWrap}>
-                            <Ionicons name="close-circle" size={48} color={colors.error} />
+                            <Ionicons name="close-circle" size={56} color={colors.error} />
                         </View>
                         <Text style={styles.modalTitle}>Payment Failed</Text>
                         <Text style={styles.modalMessage}>
@@ -249,133 +310,214 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
+    container: { flex: 1, backgroundColor: '#F5F8FA' },
 
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        backgroundColor: colors.surface,
+        paddingVertical: spacing.md + 2,
+        backgroundColor: '#FFFFFF',
+        shadowColor: 'rgba(0,0,0,0.05)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 6,
+        elevation: 2,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: colors.background,
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        backgroundColor: '#F3F4F6',
         alignItems: 'center',
         justifyContent: 'center',
     },
     headerTitle: {
-        ...typography.h2,
-        color: colors.text,
-    },
-
-    content: {
-        flex: 1,
-        padding: spacing.lg,
-    },
-
-    card: {
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.xl,
-        padding: spacing.lg,
-        ...shadows.md,
-        marginBottom: spacing.lg,
-    },
-    cardIconRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-        gap: spacing.md,
-    },
-    cardIcon: {
-        width: 52,
-        height: 52,
-        borderRadius: borderRadius.md,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    cardEntityBadge: {
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs,
-        backgroundColor: TEAL + '12',
-        borderRadius: borderRadius.full,
-    },
-    cardEntityText: {
-        ...typography.caption,
+        fontSize: 18,
         fontWeight: '700',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    },
-    cardDescription: {
-        ...typography.h3,
         color: colors.text,
-        marginBottom: spacing.lg,
     },
-    amountRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+
+    scrollView: { flex: 1 },
+    scrollContent: { padding: spacing.lg },
+
+    // Amount Hero
+    amountHeroCard: {
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: spacing.md,
+        shadowColor: TEAL,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
+        elevation: 6,
+    },
+    amountHeroGradient: {
+        padding: spacing.xl,
         alignItems: 'center',
-        marginBottom: spacing.lg,
     },
-    amountLabel: {
-        ...typography.body,
-        color: colors.textSecondary,
+    amountHeroLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: 'rgba(255,255,255,0.8)',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        marginBottom: spacing.xs,
     },
-    amountValue: {
-        fontSize: 32,
+    amountHeroValue: {
+        fontSize: 42,
         fontWeight: '800',
-        color: colors.text,
-        letterSpacing: -0.5,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: colors.border,
+        color: '#FFFFFF',
+        letterSpacing: -1,
         marginBottom: spacing.md,
     },
-    infoRow: {
+    amountHeroBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.xs,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.xs + 2,
+        borderRadius: 20,
     },
-    infoText: {
-        ...typography.caption,
-        color: colors.textMuted,
+    amountHeroBadgeText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#0D9488',
     },
 
-    methodsRow: {
+    // Details Card
+    detailsCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 18,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
+        shadowColor: 'rgba(0,0,0,0.06)',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 3,
+    },
+    detailsCardTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: colors.text,
+        marginBottom: spacing.lg,
+    },
+    detailRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.sm,
+        gap: spacing.md,
+    },
+    detailIcon: {
+        width: 46,
+        height: 46,
+        borderRadius: 14,
+        alignItems: 'center',
         justifyContent: 'center',
     },
-    methodsText: {
-        ...typography.caption,
-        color: colors.textMuted,
+    detailContent: {
+        flex: 1,
+    },
+    detailLabel: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: 0.3,
+        marginBottom: 2,
+    },
+    detailValue: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: colors.text,
+    },
+    detailDivider: {
+        height: 1,
+        backgroundColor: '#F0F3F5',
+        marginVertical: spacing.md,
     },
 
+    // Payment Methods
+    methodsCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 18,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
+        shadowColor: 'rgba(0,0,0,0.04)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    methodsTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: colors.text,
+        marginBottom: spacing.md,
+    },
+    methodsGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    methodItem: {
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    methodIconWrap: {
+        width: 48,
+        height: 48,
+        borderRadius: 14,
+        backgroundColor: TEAL + '10',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    methodLabel: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: colors.textSecondary,
+    },
+
+    // Security
+    securityRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.xs,
+        marginTop: spacing.sm,
+    },
+    securityText: {
+        fontSize: 11,
+        color: colors.textMuted,
+        fontWeight: '500',
+    },
+
+    // Footer
     footer: {
         padding: spacing.lg,
         paddingBottom: Platform.OS === 'android' ? spacing.lg : spacing.xl,
-        backgroundColor: colors.surface,
+        backgroundColor: '#FFFFFF',
         borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopColor: '#F0F3F5',
     },
     payButton: {
-        backgroundColor: TEAL,
-        borderRadius: borderRadius.lg,
-        height: 56,
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...shadows.md,
+        borderRadius: 16,
+        overflow: 'hidden',
         shadowColor: TEAL,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 6,
     },
     payButtonDisabled: {
         opacity: 0.75,
+    },
+    payButtonGradient: {
+        height: 56,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 16,
     },
     payButtonInner: {
         flexDirection: 'row',
@@ -383,9 +525,9 @@ const styles = StyleSheet.create({
         gap: spacing.sm,
     },
     payButtonText: {
-        ...typography.button,
-        color: '#fff',
         fontSize: 17,
+        fontWeight: '700',
+        color: '#FFFFFF',
     },
 
     // Success
@@ -395,22 +537,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: spacing.xxl,
     },
-    successIcon: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+    successCircle: {
+        width: 130,
+        height: 130,
+        borderRadius: 65,
+        backgroundColor: TEAL + '15',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: spacing.xl,
     },
     successTitle: {
-        ...typography.h1,
+        fontSize: 24,
+        fontWeight: '800',
         color: colors.text,
         textAlign: 'center',
         marginBottom: spacing.md,
     },
     successSub: {
-        ...typography.body,
+        fontSize: 15,
         color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 24,
@@ -425,21 +569,31 @@ const styles = StyleSheet.create({
         padding: spacing.xl,
     },
     modalCard: {
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.xl,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
         padding: spacing.xl,
         width: '100%',
+        maxWidth: 360,
         alignItems: 'center',
         ...shadows.lg,
     },
-    modalIconWrap: { marginBottom: spacing.md },
+    modalIconWrap: {
+        width: 80,
+        height: 80,
+        borderRadius: 28,
+        backgroundColor: colors.error + '12',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: spacing.md,
+    },
     modalTitle: {
-        ...typography.h2,
+        fontSize: 20,
+        fontWeight: '700',
         color: colors.text,
         marginBottom: spacing.sm,
     },
     modalMessage: {
-        ...typography.body,
+        fontSize: 14,
         color: colors.textSecondary,
         textAlign: 'center',
         marginBottom: spacing.xl,
@@ -452,18 +606,18 @@ const styles = StyleSheet.create({
     },
     modalBtn: {
         flex: 1,
-        height: 48,
-        borderRadius: borderRadius.md,
+        height: 50,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
     },
     modalBtnOutline: {
         borderWidth: 1,
         borderColor: colors.border,
-        backgroundColor: colors.background,
+        backgroundColor: '#F9FAFB',
     },
     modalBtnText: {
-        ...typography.body,
+        fontSize: 15,
         fontWeight: '700',
     },
 });

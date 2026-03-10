@@ -1,5 +1,5 @@
 // CategoryChip Component - Horizontal scrollable category selector
-// Modern Viral India Aesthetic
+// Premium design with proper spacing
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
@@ -41,13 +41,22 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({
                         style={[
                             styles.chip,
                             { backgroundColor: theme.surface2, borderColor: theme.border },
-                            isSelected && { backgroundColor: theme.primary, borderColor: theme.primary },
+                            isSelected && {
+                                backgroundColor: theme.primary,
+                                borderColor: theme.primary,
+                                shadowColor: theme.primary,
+                                shadowOffset: { width: 0, height: 3 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 6,
+                                elevation: 4,
+                            },
                         ]}
                         onPress={() => onSelect(category.id)}
+                        activeOpacity={0.7}
                     >
                         <Ionicons
                             name={category.icon}
-                            size={18}
+                            size={16}
                             color={isSelected ? theme.textOnPrimary : theme.textSecondary}
                         />
                         <Text
@@ -56,6 +65,7 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({
                                 { color: theme.textSecondary },
                                 isSelected && { color: theme.textOnPrimary },
                             ]}
+                            numberOfLines={1}
                         >
                             {category.name}
                         </Text>
@@ -69,30 +79,24 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({
 const styles = StyleSheet.create({
     container: {
         paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
+        paddingVertical: spacing.sm,
         gap: spacing.sm,
     },
     chip: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
+        minWidth: 80,
+        paddingHorizontal: spacing.md + 2,
+        paddingVertical: spacing.sm + 2,
         borderRadius: borderRadius.full,
         backgroundColor: colors.surface2,
         borderWidth: 1,
         borderColor: colors.border,
-        gap: spacing.xs,
-    },
-    chipSelected: {
-        backgroundColor: colors.primary,
-        borderColor: colors.primary,
+        gap: spacing.xs + 2,
     },
     chipText: {
-        ...typography.bodySmall,
+        fontSize: 13,
         color: colors.textSecondary,
         fontWeight: '600',
-    },
-    chipTextSelected: {
-        color: colors.textOnPrimary,
     },
 });

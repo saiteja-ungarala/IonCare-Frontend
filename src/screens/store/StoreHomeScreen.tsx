@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     ActivityIndicator,
+    Dimensions,
     FlatList,
     StyleSheet,
     Text,
@@ -45,6 +46,9 @@ const resolveCategoryHint = (categoryName: string): string => {
     if (matchingKey) return CATEGORY_HINTS[matchingKey];
     return 'Explore products and offers';
 };
+
+const { width: STORE_SCREEN_WIDTH } = Dimensions.get('window');
+const STORE_CARD_WIDTH = (STORE_SCREEN_WIDTH - spacing.lg * 2 - spacing.md) / 2;
 
 const CATEGORY_CARD_PALETTES = [
     {
@@ -159,31 +163,24 @@ export function StoreHomeScreen({ navigation }: any) {
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={['#072745', '#0C3E66', '#0A3B62']}
+                colors={[storeTheme.primary || '#00B8D9', storeTheme.primaryDark || '#007C91']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.heroBackground}
-            />
-
-            <View style={styles.header}>
-                <View style={styles.titleWrap}>
-                    <Text style={styles.headerKicker}>Shop By Category</Text>
-                    <View style={styles.headerTitleRow}>
-                        <Text style={styles.headerTitle}>Store</Text>
-                        <View style={styles.titleIconWrap}>
-                            <Ionicons name="storefront-outline" size={16} color={storeTheme.primaryDark} />
-                        </View>
-                    </View>
+                style={styles.header}
+            >
+                <View style={styles.headerContent}>
+                    <Text style={styles.headerTitle}>Our Store</Text>
+                    <Text style={styles.headerSubtitle}>Shop by category</Text>
                 </View>
                 <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-                    <Ionicons name="cart-outline" size={20} color={storeTheme.primaryDark} />
+                    <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
                     {totalItems > 0 ? (
                         <View style={styles.badge}>
                             <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
                         </View>
                     ) : null}
                 </TouchableOpacity>
-            </View>
+            </LinearGradient>
 
             <View style={styles.sheet}>
                 <View style={styles.searchWrap}>
@@ -244,52 +241,32 @@ export function StoreHomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0A3458',
-    },
-    heroBackground: {
-        ...StyleSheet.absoluteFillObject,
-        height: 210,
+        backgroundColor: '#F5F8FA',
     },
     header: {
-        paddingTop: spacing.xxl,
         paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.lg,
+        paddingTop: spacing.xxl,
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        overflow: 'hidden',
     },
-    titleWrap: {
+    headerContent: {
         flex: 1,
-        marginRight: spacing.md,
-    },
-    headerKicker: {
-        color: 'rgba(255,255,255,0.72)',
-        textTransform: 'uppercase',
-        fontSize: 11,
-        letterSpacing: 1,
-        fontWeight: '600',
-    },
-    headerTitleRow: {
-        marginTop: spacing.xs,
-        flexDirection: 'row',
-        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 24,
         fontWeight: '600',
         letterSpacing: -0.2,
         color: '#FFFFFF',
+        marginBottom: spacing.xs,
     },
-    titleIconWrap: {
-        marginLeft: spacing.sm,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(209, 250, 244, 0.94)',
-        borderWidth: 1,
-        borderColor: 'rgba(0, 168, 152, 0.2)',
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '500',
     },
     cartButton: {
         width: 48,
@@ -297,9 +274,8 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(220, 252, 247, 0.88)',
-        borderWidth: 1,
-        borderColor: 'rgba(0, 168, 152, 0.22)',
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        zIndex: 1,
     },
     badge: {
         position: 'absolute',
@@ -323,12 +299,7 @@ const styles = StyleSheet.create({
     sheet: {
         flex: 1,
         backgroundColor: '#F8FBFC',
-        borderTopLeftRadius: 34,
-        borderTopRightRadius: 34,
         paddingTop: spacing.lg,
-        borderWidth: 1,
-        borderColor: '#DFEBEF',
-        overflow: 'hidden',
     },
     searchWrap: {
         marginHorizontal: spacing.lg,
@@ -356,7 +327,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     categoryCard: {
-        width: '48.4%',
+        width: STORE_CARD_WIDTH,
         borderRadius: 20,
         borderWidth: 1,
         backgroundColor: '#FFFFFF',

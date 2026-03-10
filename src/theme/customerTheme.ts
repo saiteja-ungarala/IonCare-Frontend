@@ -72,6 +72,22 @@ export const customerColors: ThemeColors = {
     glowTeal: '#00B8D9',
 };
 
+// Extended customer-specific design tokens (beyond ThemeColors)
+export const customerDesign = {
+    gradient1: ['#00B8D9', '#007C91'] as readonly string[],
+    gradient2: ['#00B8D9', '#38BDF8'] as readonly string[],
+    gradientWarm: ['#FF7043', '#FFB74D'] as readonly string[],
+    cardShadowColor: 'rgba(0, 184, 217, 0.10)',
+    cardShadow: {
+        shadowColor: 'rgba(0, 184, 217, 0.18)',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 12,
+        elevation: 4,
+    },
+};
+
 export default {
     colors: customerColors,
+    design: customerDesign,
 };

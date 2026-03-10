@@ -18,7 +18,7 @@ interface BookingsActions {
         scheduled_time: string;
         notes?: string;
     }) => Promise<Booking>;
-    cancelBooking: (bookingId: string) => Promise<void>;
+    cancelBooking: (bookingId: string, reason: string) => Promise<void>;
     updateBookingStatus: (bookingId: string, status: Booking['status']) => void;
 }
 
@@ -54,10 +54,10 @@ export const useBookingsStore = create<BookingsStore>((set, get) => ({
         }
     },
 
-    cancelBooking: async (bookingId: string) => {
+    cancelBooking: async (bookingId: string, reason: string) => {
         set({ isLoading: true });
         try {
-            await bookingService.cancelBooking(bookingId);
+            await bookingService.cancelBooking(bookingId, reason);
             set((state) => ({
                 bookings: state.bookings.map((b) =>
                     b.id === bookingId ? { ...b, status: 'cancelled' as const } : b

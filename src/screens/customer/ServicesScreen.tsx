@@ -11,8 +11,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackParamList, Service } from '../../models/types';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { catalogService } from '../../services/catalogService';
 
 type ServicesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -83,35 +85,54 @@ export const ServicesScreen = () => {
         navigation.navigate('ServiceDetails', { service });
     };
 
-    const renderItem = ({ item }: { item: Service }) => (
-        <TouchableOpacity
-            style={styles.card}
-            onPress={() => handleServicePress(item)}
-            activeOpacity={0.9}
+    const renderItem = ({ item }: { item: Service }) => {
+        const catColor = getCategoryColor(item.category);
+        return (
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => handleServicePress(item)}
+                activeOpacity={0.85}
+            >
+                {/* Left accent bar */}
+                <View style={[styles.cardAccent, { backgroundColor: catColor }]} />
+                <View style={[styles.iconContainer, { backgroundColor: catColor + '18' }]}>
+                    <Ionicons name={getCategoryIcon(item.category)} size={28} color={catColor} />
+                </View>
+                <View style={styles.cardContent}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.cardDuration} numberOfLines={1}>{item.duration}</Text>
+                    <Text style={styles.cardPrice}>₹{item.price}</Text>
+                </View>
+                <View style={styles.arrowContainer}>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    const renderHeader = () => (
+        <LinearGradient
+            colors={[customerColors.primary, customerColors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.header}
         >
-            <View style={[styles.iconContainer, { backgroundColor: getCategoryColor(item.category) }]}>
-                <Ionicons name={getCategoryIcon(item.category)} size={32} color="#FFFFFF" />
+            <View style={styles.headerContent}>
+                <Text style={styles.headerTitle}>Our Services</Text>
+                <Text style={styles.headerSubtitle}>Select a service to book</Text>
             </View>
-            <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.cardDuration}>{item.duration}</Text>
-                <Text style={styles.cardPrice}>₹{item.price}</Text>
+            <View style={styles.headerDecor}>
+                <Ionicons name="construct" size={80} color="rgba(255,255,255,0.25)" />
             </View>
-            <View style={styles.arrowContainer}>
-                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-            </View>
-        </TouchableOpacity>
+        </LinearGradient>
     );
 
     if (loading) {
         return (
             <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Our Services</Text>
-                    <Text style={styles.headerSubtitle}>Select a service to book</Text>
-                </View>
+                {renderHeader()}
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.primary} />
+                    <ActivityIndicator size="large" color={customerColors.primary} />
                 </View>
             </SafeAreaView>
         );
@@ -119,10 +140,7 @@ export const ServicesScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Our Services</Text>
-                <Text style={styles.headerSubtitle}>Select a service to book</Text>
-            </View>
+            {renderHeader()}
             <FlatList
                 data={services}
                 renderItem={renderItem}
@@ -138,25 +156,37 @@ export const ServicesScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: '#F5F8FA',
     },
     header: {
         padding: spacing.lg,
-        paddingTop: spacing.xl,
-        backgroundColor: colors.surface,
-        borderBottomLeftRadius: borderRadius.xl,
-        borderBottomRightRadius: borderRadius.xl,
-        ...shadows.sm,
-        marginBottom: spacing.md,
+        paddingTop: spacing.xxl,
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        flexDirection: 'row',
+        overflow: 'hidden',
+    },
+    headerContent: {
+        flex: 1,
     },
     headerTitle: {
-        ...typography.h1,
-        color: colors.primary,
+        fontSize: 24,
+        fontWeight: '600',
+        letterSpacing: -0.2,
+        color: '#FFFFFF',
         marginBottom: spacing.xs,
     },
     headerSubtitle: {
-        ...typography.body,
-        color: colors.textSecondary,
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '500',
+    },
+    headerDecor: {
+        position: 'absolute',
+        right: spacing.lg,
+        bottom: spacing.md,
+        opacity: 0.8,
     },
     loadingContainer: {
         flex: 1,
@@ -165,21 +195,33 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: spacing.md,
+        paddingTop: spacing.lg,
     },
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.lg,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
         padding: spacing.md,
+        paddingLeft: 0,
         marginBottom: spacing.md,
-        ...shadows.md,
-        borderWidth: 1,
-        borderColor: colors.border,
+        overflow: 'hidden',
+        shadowColor: 'rgba(0,0,0,0.06)',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 3,
+    },
+    cardAccent: {
+        width: 4,
+        alignSelf: 'stretch',
+        borderTopLeftRadius: 16,
+        borderBottomLeftRadius: 16,
+        marginRight: spacing.md,
     },
     iconContainer: {
-        width: 60,
-        height: 60,
+        width: 56,
+        height: 56,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
@@ -187,24 +229,32 @@ const styles = StyleSheet.create({
     },
     cardContent: {
         flex: 1,
+        flexShrink: 1,
     },
     cardTitle: {
-        ...typography.h2,
-        fontSize: 17,
+        fontSize: 16,
+        fontWeight: '600',
         color: colors.text,
         marginBottom: 2,
     },
     cardDuration: {
-        ...typography.caption,
+        fontSize: 12,
         color: colors.textSecondary,
         marginBottom: 2,
+        fontWeight: '500',
     },
     cardPrice: {
-        ...typography.bodySmall,
-        color: colors.primary,
-        fontWeight: '600',
+        fontSize: 15,
+        color: customerColors.primary,
+        fontWeight: '700',
     },
     arrowContainer: {
-        padding: spacing.xs,
+        width: 32,
+        height: 32,
+        borderRadius: 10,
+        backgroundColor: '#F3F4F6',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: spacing.sm,
     },
 });

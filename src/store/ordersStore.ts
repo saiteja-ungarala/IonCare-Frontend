@@ -12,6 +12,7 @@ interface OrdersState {
 interface OrdersActions {
     fetchOrders: () => Promise<void>;
     fetchOrderById: (orderId: number) => Promise<OrderDetail | null>;
+    cancelOrder: (orderId: number, reason: string) => Promise<{ refunded: boolean; refund_amount: number }>;
     clearSelectedOrder: () => void;
 }
 
@@ -44,6 +45,20 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
             set({ isLoadingDetail: false, error: error?.message || 'Failed to load order details', selectedOrder: null });
             return null;
         }
+    },
+
+    cancelOrder: async (orderId: number, reason: string) => {
+        const result = await ordersService.cancelOrder(orderId, reason);
+        // Update list + selectedOrder to reflect cancelled status
+        set(state => ({
+            orders: state.orders.map(o =>
+                o.id === orderId ? { ...o, status: 'cancelled', statusBucket: 'cancelled' as const } : o
+            ),
+            selectedOrder: state.selectedOrder?.id === orderId
+                ? { ...state.selectedOrder, status: 'cancelled', statusBucket: 'cancelled' as const }
+                : state.selectedOrder,
+        }));
+        return result;
     },
 
     clearSelectedOrder: () => set({ selectedOrder: null }),

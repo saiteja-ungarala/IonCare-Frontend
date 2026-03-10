@@ -1,12 +1,14 @@
-// Profile Screen
+// Profile Screen — Premium design with enhanced visuals
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { profileService } from '../../services/profileService';
 
@@ -21,15 +23,17 @@ interface MenuItemProps {
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({ icon, title, subtitle, onPress, danger }) => (
-    <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-        <View style={[styles.menuIcon, danger && { backgroundColor: colors.error + '20' }]}>
-            <Ionicons name={icon} size={22} color={danger ? colors.error : colors.primary} />
+    <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
+        <View style={[styles.menuIcon, danger && { backgroundColor: colors.error + '12' }]}>
+            <Ionicons name={icon} size={20} color={danger ? colors.error : customerColors.primary} />
         </View>
         <View style={styles.menuContent}>
-            <Text style={[styles.menuTitle, danger && { color: colors.error }]}>{title}</Text>
-            {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
+            <Text style={[styles.menuTitle, danger && { color: colors.error }]} numberOfLines={1}>{title}</Text>
+            {subtitle && <Text style={styles.menuSubtitle} numberOfLines={1}>{subtitle}</Text>}
         </View>
-        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+        <View style={styles.menuArrow}>
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+        </View>
     </TouchableOpacity>
 );
 
@@ -93,39 +97,61 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
+                    <Ionicons name="arrow-back" size={22} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Profile</Text>
             </View>
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+                {/* Profile Card with gradient */}
                 <View style={styles.profileCard}>
-                    <View style={styles.avatar}>
-                        <Ionicons name="person" size={40} color={colors.primary} />
-                    </View>
-                    <View style={styles.profileInfo}>
-                        <Text style={styles.profileName}>{profileName}</Text>
-                        <Text style={styles.profileEmail}>{user?.email}</Text>
-                        <Text style={styles.profilePhone}>{profilePhone}</Text>
-                    </View>
-                    <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
-                        <Ionicons name="pencil" size={18} color={colors.primary} />
-                    </TouchableOpacity>
+                    <LinearGradient
+                        colors={[customerColors.primaryLight, '#FFFFFF']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={styles.profileGradient}
+                    >
+                        <View style={styles.profileRow}>
+                            <View style={styles.avatar}>
+                                <LinearGradient
+                                    colors={[customerColors.primary, customerColors.primaryDark]}
+                                    style={styles.avatarGradient}
+                                >
+                                    <Text style={styles.avatarLetter}>
+                                        {profileName.charAt(0).toUpperCase()}
+                                    </Text>
+                                </LinearGradient>
+                            </View>
+                            <View style={styles.profileInfo}>
+                                <Text style={styles.profileName} numberOfLines={1}>{profileName}</Text>
+                                <Text style={styles.profileEmail} numberOfLines={1}>{user?.email}</Text>
+                                <Text style={styles.profilePhone} numberOfLines={1}>{profilePhone}</Text>
+                            </View>
+                            <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
+                                <Ionicons name="pencil" size={16} color={customerColors.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    </LinearGradient>
                 </View>
 
                 {/* Referral Code Card */}
                 <TouchableOpacity style={styles.referralCard} onPress={handleCopyReferral} activeOpacity={0.7}>
-                    <View>
-                        <Text style={styles.referralTitle}>Refer & Earn</Text>
-                        <Text style={styles.referralSubtitle}>Share your code</Text>
-                    </View>
-                    <View style={styles.codeContainer}>
-                        <Text style={styles.referralCode}>{referralCode || '...'}</Text>
-                        <Ionicons name="copy-outline" size={18} color={'#7FA650'} />
+                    <View style={styles.referralAccent} />
+                    <View style={styles.referralInner}>
+                        <View>
+                            <Text style={styles.referralTitle}>Refer & Earn</Text>
+                            <Text style={styles.referralSubtitle}>Share your code</Text>
+                        </View>
+                        <View style={styles.codeContainer}>
+                            <Text style={styles.referralCode}>{referralCode || '...'}</Text>
+                            <View style={styles.copyIcon}>
+                                <Ionicons name="copy-outline" size={16} color={'#7FA650'} />
+                            </View>
+                        </View>
                     </View>
                 </TouchableOpacity>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Account</Text>
+                    <Text style={styles.sectionTitle}>ACCOUNT</Text>
                     <View style={styles.menuCard}>
                         <MenuItem
                             icon="wallet-outline"
@@ -146,7 +172,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Support</Text>
+                    <Text style={styles.sectionTitle}>SUPPORT</Text>
                     <View style={styles.menuCard}>
                         <MenuItem icon="help-circle-outline" title="Help & FAQ" onPress={() => navigation.navigate('HelpFAQ')} />
                         <MenuItem icon="chatbubble-outline" title="Contact Us" onPress={() => navigation.navigate('ContactUs')} />
@@ -157,7 +183,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
                 <View style={styles.section}>
                     <View style={styles.menuCard}>
-                        <MenuItem icon="log-out-outline" title="Logout" onPress={handleLogout} />
+                        <MenuItem icon="log-out-outline" title="Logout" onPress={handleLogout} danger />
                     </View>
                 </View>
 
@@ -168,30 +194,220 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    header: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, ...shadows.sm },
-    backButton: { marginRight: spacing.md },
-    headerTitle: { ...typography.h2, fontSize: 20, color: colors.text },
+    container: { flex: 1, backgroundColor: '#F5F8FA' },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.md,
+        paddingVertical: spacing.md + 2,
+        backgroundColor: '#FFFFFF',
+        shadowColor: 'rgba(0,0,0,0.05)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    backButton: {
+        marginRight: spacing.md,
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: '#F3F4F6',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.text,
+    },
     scrollView: { flex: 1, padding: spacing.md },
-    profileCard: { flexDirection: 'row', backgroundColor: colors.surface2, borderRadius: borderRadius.lg, padding: spacing.md, ...shadows.sm, marginBottom: spacing.md },
-    avatar: { width: 70, height: 70, borderRadius: 35, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: spacing.md },
-    profileInfo: { flex: 1, justifyContent: 'center' },
-    profileName: { ...typography.h2, fontSize: 18, color: colors.text, marginBottom: 2 },
-    profileEmail: { ...typography.bodySmall, color: colors.textSecondary, marginBottom: 2 },
-    profilePhone: { ...typography.bodySmall, color: colors.textSecondary },
-    editButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
-    referralCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.primaryLight, padding: spacing.md, borderRadius: borderRadius.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
-    referralTitle: { ...typography.h2, fontSize: 16, color: colors.primary, marginBottom: 2 },
-    referralSubtitle: { ...typography.caption, color: colors.textSecondary },
-    codeContainer: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, backgroundColor: colors.surface, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: borderRadius.sm },
-    referralCode: { ...typography.body, fontWeight: '700', color: colors.text },
+    profileCard: {
+        borderRadius: 18,
+        overflow: 'hidden',
+        marginBottom: spacing.md,
+        shadowColor: 'rgba(0, 184, 217, 0.12)',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 12,
+        elevation: 3,
+        backgroundColor: '#FFFFFF',
+    },
+    profileGradient: {
+        padding: spacing.lg,
+    },
+    profileRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    avatar: {
+        width: 64,
+        height: 64,
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginRight: spacing.md,
+    },
+    avatarGradient: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    avatarLetter: {
+        fontSize: 26,
+        fontWeight: '800',
+        color: '#FFFFFF',
+    },
+    profileInfo: {
+        flex: 1,
+        flexShrink: 1,
+    },
+    profileName: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.text,
+        marginBottom: 2,
+    },
+    profileEmail: {
+        fontSize: 13,
+        color: colors.textSecondary,
+        marginBottom: 2,
+        fontWeight: '500',
+    },
+    profilePhone: {
+        fontSize: 13,
+        color: colors.textSecondary,
+        fontWeight: '500',
+    },
+    editButton: {
+        width: 38,
+        height: 38,
+        borderRadius: 12,
+        backgroundColor: customerColors.primaryLight,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    referralCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        marginBottom: spacing.md,
+        overflow: 'hidden',
+        shadowColor: 'rgba(127, 166, 80, 0.15)',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 3,
+    },
+    referralAccent: {
+        height: 3,
+        backgroundColor: '#7FA650',
+    },
+    referralInner: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: spacing.md,
+    },
+    referralTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#2D5016',
+        marginBottom: 2,
+    },
+    referralSubtitle: {
+        fontSize: 12,
+        color: '#5B7A3D',
+        fontWeight: '500',
+    },
+    codeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+        backgroundColor: '#F1F8E9',
+        paddingVertical: spacing.xs + 2,
+        paddingHorizontal: spacing.sm + 2,
+        borderRadius: 10,
+    },
+    referralCode: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#2D5016',
+    },
+    copyIcon: {
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        backgroundColor: 'rgba(127, 166, 80, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     section: { marginTop: spacing.md },
-    sectionTitle: { ...typography.bodySmall, color: colors.textSecondary, marginBottom: spacing.sm, paddingHorizontal: spacing.xs, textTransform: 'uppercase', fontWeight: '700' },
-    menuCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, ...shadows.sm, overflow: 'hidden' },
-    menuItem: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border },
-    menuIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: spacing.md },
-    menuContent: { flex: 1 },
-    menuTitle: { ...typography.body, fontWeight: '600', color: colors.text, marginBottom: 2 },
-    menuSubtitle: { ...typography.caption, color: colors.textSecondary },
-    version: { ...typography.caption, color: colors.textSecondary, textAlign: 'center', marginTop: spacing.xl, marginBottom: spacing.lg },
+    sectionTitle: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        marginBottom: spacing.sm,
+        paddingHorizontal: spacing.xs,
+        textTransform: 'uppercase',
+        fontWeight: '700',
+        letterSpacing: 0.8,
+    },
+    menuCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: 'rgba(0,0,0,0.05)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.md,
+        paddingVertical: spacing.md + 2,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F5F7F9',
+    },
+    menuIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: customerColors.primaryLight,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.md,
+    },
+    menuContent: {
+        flex: 1,
+        flexShrink: 1,
+    },
+    menuTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: colors.text,
+        marginBottom: 2,
+    },
+    menuSubtitle: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        fontWeight: '500',
+    },
+    menuArrow: {
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        backgroundColor: '#F5F7F9',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: spacing.xs,
+    },
+    version: {
+        fontSize: 12,
+        color: colors.textMuted,
+        textAlign: 'center',
+        marginTop: spacing.xl,
+        marginBottom: spacing.lg,
+        fontWeight: '500',
+    },
 });

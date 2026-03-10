@@ -101,10 +101,11 @@ export const bookingService = {
         }
     },
 
-    /** Cancel an existing booking */
-    async cancelBooking(id: string): Promise<void> {
+    /** Cancel an existing booking with a mandatory reason */
+    async cancelBooking(id: string, reason: string): Promise<{ refunded: boolean; refund_amount: number }> {
         try {
-            await api.patch(`/bookings/${id}/cancel`);
+            const response = await api.patch(`/bookings/${id}/cancel`, { reason });
+            return response.data?.data ?? { refunded: false, refund_amount: 0 };
         } catch (error: any) {
             console.error('Error cancelling booking:', error.message);
             throw new Error(error.response?.data?.message || 'Failed to cancel booking');

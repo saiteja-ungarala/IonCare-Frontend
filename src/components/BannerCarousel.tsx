@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     StyleSheet,
@@ -9,7 +9,7 @@ import {
     NativeScrollEvent,
     ImageBackground,
 } from 'react-native';
-import { colors, spacing } from '../theme/theme';
+import { colors, spacing, borderRadius } from '../theme/theme';
 
 export interface BannerItem {
     id: string;
@@ -32,8 +32,9 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
     onBannerPress,
 }) => {
     const { width: screenWidth } = useWindowDimensions();
-    const CARD_WIDTH = screenWidth;
-    const BANNER_HEIGHT = 220;
+    const CARD_MARGIN = spacing.lg;
+    const CARD_WIDTH = screenWidth - CARD_MARGIN * 2;
+    const BANNER_HEIGHT = 200;
 
     const [activeIndex, setActiveIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
@@ -76,13 +77,13 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
             {item.image ? (
                 <ImageBackground
                     source={item.image}
-                    style={[styles.card, { width: CARD_WIDTH, height: BANNER_HEIGHT }]}
+                    style={[styles.card, { width: CARD_WIDTH, height: BANNER_HEIGHT, marginHorizontal: CARD_MARGIN }]}
                     imageStyle={styles.cardImage}
                 >
                     <View style={styles.imageOverlay} />
                 </ImageBackground>
             ) : (
-                <View style={[styles.card, { backgroundColor: item.backgroundColor, width: CARD_WIDTH, height: BANNER_HEIGHT }]}>
+                <View style={[styles.card, { backgroundColor: item.backgroundColor, width: CARD_WIDTH, height: BANNER_HEIGHT, marginHorizontal: CARD_MARGIN }]}>
                     <View style={styles.imageOverlay} />
                 </View>
             )}
@@ -133,39 +134,40 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     itemContainer: {
-        alignItems: 'stretch',
+        alignItems: 'center',
     },
     card: {
-        borderRadius: 0,
+        borderRadius: 18,
         overflow: 'hidden',
         flexDirection: 'row',
         position: 'relative',
     },
     cardImage: {
-        borderRadius: 0,
+        borderRadius: 18,
     },
     imageOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(255,255,255,0.12)',
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: 18,
     },
     pagination: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: spacing.sm,
+        marginTop: spacing.sm + 2,
         gap: 6,
     },
     dot: {
-        height: 5,
+        height: 6,
         borderRadius: 3,
     },
     activeDot: {
-        width: 22,
+        width: 24,
         backgroundColor: colors.primary,
     },
     inactiveDot: {
-        width: 7,
+        width: 8,
         backgroundColor: colors.textMuted,
-        opacity: 0.3,
+        opacity: 0.25,
     },
 });

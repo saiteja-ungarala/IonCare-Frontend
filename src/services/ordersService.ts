@@ -198,6 +198,14 @@ export const ordersService = {
         const response = await api.get(`/orders/${id}`);
         return normalizeOrderDetail(response.data?.data);
     },
+
+    /**
+     * Cancel an order with a mandatory reason
+     */
+    async cancelOrder(id: number, reason: string): Promise<{ refunded: boolean; refund_amount: number }> {
+        const response = await api.post(`/orders/${id}/cancel`, { reason });
+        return response.data?.data ?? { refunded: false, refund_amount: 0 };
+    },
 };
 
 export default ordersService;

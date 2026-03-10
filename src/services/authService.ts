@@ -33,7 +33,7 @@ const storage = {
 const normalizeRole = (value: unknown): UserRole | null => {
     if (typeof value !== 'string') return null;
     const normalized = value.trim().toLowerCase();
-    if (normalized === 'customer' || normalized === 'agent' || normalized === 'dealer') {
+    if (normalized === 'customer' || normalized === 'agent' || normalized === 'dealer' || normalized === 'admin') {
         return normalized;
     }
     return null;

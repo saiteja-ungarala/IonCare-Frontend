@@ -53,9 +53,23 @@ import { colors } from './src/theme/theme';
 import { customerColors } from './src/theme/customerTheme';
 import { agentTheme } from './src/theme/agentTheme';
 import { dealerTheme } from './src/theme/dealerTheme';
+import { adminColors } from './src/theme/adminTheme';
+import {
+    AdminDashboardScreen,
+    AdminProductsScreen,
+    AdminProductFormScreen,
+    AdminBannersScreen,
+    AdminBannerFormScreen,
+    AdminKycScreen,
+    AdminKycDetailScreen,
+    AdminOrdersScreen,
+    AdminBookingDetailScreen,
+    AdminOrderDetailScreen,
+} from './src/screens/admin';
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator();
+const Stack    = createNativeStackNavigator<RootStackParamList>();
+const AdminNav = createNativeStackNavigator();
+const Tab      = createBottomTabNavigator();
 
 type AppErrorBoundaryState = {
     hasError: boolean;
@@ -260,6 +274,88 @@ function DealerTabs() {
     );
 }
 
+function AdminProductsStack() {
+    return (
+        <AdminNav.Navigator screenOptions={{ headerShown: false }}>
+            <AdminNav.Screen name="AdminProductsList" component={AdminProductsScreen} />
+            <AdminNav.Screen name="AdminProductForm"  component={AdminProductFormScreen} />
+        </AdminNav.Navigator>
+    );
+}
+
+function AdminBannersStack() {
+    return (
+        <AdminNav.Navigator screenOptions={{ headerShown: false }}>
+            <AdminNav.Screen name="AdminBannersList" component={AdminBannersScreen} />
+            <AdminNav.Screen name="AdminBannerForm"  component={AdminBannerFormScreen} />
+        </AdminNav.Navigator>
+    );
+}
+
+function AdminKycStack() {
+    return (
+        <AdminNav.Navigator screenOptions={{ headerShown: false }}>
+            <AdminNav.Screen name="AdminKycList"   component={AdminKycScreen} />
+            <AdminNav.Screen name="AdminKycDetail" component={AdminKycDetailScreen} />
+        </AdminNav.Navigator>
+    );
+}
+
+function AdminOrdersStack() {
+    return (
+        <AdminNav.Navigator screenOptions={{ headerShown: false }}>
+            <AdminNav.Screen name="AdminOrdersList"      component={AdminOrdersScreen} />
+            <AdminNav.Screen name="AdminBookingDetail"   component={AdminBookingDetailScreen} />
+            <AdminNav.Screen name="AdminOrderDetail"     component={AdminOrderDetailScreen} />
+        </AdminNav.Navigator>
+    );
+}
+
+function AdminTabNavigator() {
+    return (
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarActiveTintColor:   adminColors.tabBarActive,
+                tabBarInactiveTintColor: adminColors.tabBarInactive,
+                tabBarLabelStyle: {
+                    fontSize: 11,
+                    fontWeight: '700',
+                },
+                tabBarStyle: {
+                    backgroundColor: adminColors.tabBarBackground,
+                    height: 64,
+                    borderTopWidth: 0,
+                    paddingTop: 6,
+                },
+                tabBarIcon: ({ color, size, focused }) => {
+                    let iconName: keyof typeof Ionicons.glyphMap = 'grid-outline';
+
+                    if (route.name === 'AdminDashboard') {
+                        iconName = focused ? 'grid' : 'grid-outline';
+                    } else if (route.name === 'AdminProducts') {
+                        iconName = focused ? 'cube' : 'cube-outline';
+                    } else if (route.name === 'AdminBanners') {
+                        iconName = focused ? 'image' : 'image-outline';
+                    } else if (route.name === 'AdminKyc') {
+                        iconName = focused ? 'document-text' : 'document-text-outline';
+                    } else if (route.name === 'AdminOrders') {
+                        iconName = focused ? 'receipt' : 'receipt-outline';
+                    }
+
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+            })}
+        >
+            <Tab.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Dashboard' }} />
+            <Tab.Screen name="AdminProducts"  component={AdminProductsStack}   options={{ title: 'Products' }} />
+            <Tab.Screen name="AdminBanners"   component={AdminBannersStack}    options={{ title: 'Banners' }} />
+            <Tab.Screen name="AdminKyc"       component={AdminKycStack}        options={{ title: 'KYC' }} />
+            <Tab.Screen name="AdminOrders"    component={AdminOrdersStack}     options={{ title: 'Orders' }} />
+        </Tab.Navigator>
+    );
+}
+
 function AuthStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -345,6 +441,10 @@ export default function App() {
     const renderStack = () => {
         if (!isAuthenticated) {
             return <AuthStack />;
+        }
+
+        if (user?.role === 'admin') {
+            return <AdminTabNavigator />;
         }
 
         if (user?.role === 'agent') {

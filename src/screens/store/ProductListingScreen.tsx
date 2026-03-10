@@ -72,7 +72,7 @@ const formatPrice = (value: number): string => {
 };
 
 export function ProductListingScreen({ route, navigation }: any) {
-    const { categoryId, brandId, categoryName, brandName } = route.params || {};
+    const { categoryId, brandId, categoryName, brandName, themeColor, themeDark } = route.params || {};
     const [products, setProducts] = React.useState<StoreProduct[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
@@ -245,23 +245,28 @@ export function ProductListingScreen({ route, navigation }: any) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
+            <LinearGradient
+                colors={themeDark && themeColor ? [themeDark, themeColor] : ['#0D7C5A', '#15A67A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.header}
+            >
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Ionicons name="chevron-back" size={20} color={storeTheme.text} />
+                    <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
                 </TouchableOpacity>
                 <View style={styles.titleWrap}>
-                    <Text style={styles.headerKicker}>{categoryName || 'Category'} {'>'} {brandName || 'Brand'}</Text>
                     <Text style={styles.headerTitle} numberOfLines={1}>{brandName || 'Products'}</Text>
+                    <Text style={styles.headerSubtitle}>Browse products & offers</Text>
                 </View>
                 <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-                    <Ionicons name="cart-outline" size={20} color={storeTheme.primaryDark} />
+                    <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
                     {totalItems > 0 ? (
                         <View style={styles.badge}>
                             <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
                         </View>
                     ) : null}
                 </TouchableOpacity>
-            </View>
+            </LinearGradient>
 
             <View style={styles.controlsPanel}>
                 <View style={styles.searchWrap}>
@@ -349,42 +354,42 @@ export function ProductListingScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ECF2F6',
+        backgroundColor: '#F5F8FA',
     },
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
         paddingHorizontal: spacing.lg,
         paddingTop: spacing.xxl,
-        paddingBottom: spacing.md,
-        backgroundColor: '#ECF2F6',
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        overflow: 'hidden',
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
+        width: 44,
+        height: 44,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F7FAFC',
-        borderWidth: 1,
-        borderColor: '#D7E3EA',
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        marginRight: spacing.sm,
     },
     titleWrap: {
         flex: 1,
-        marginHorizontal: spacing.md,
-    },
-    headerKicker: {
-        fontSize: 12,
-        color: '#6A7E92',
-        fontWeight: '500',
+        marginRight: spacing.sm,
     },
     headerTitle: {
-        marginTop: 3,
-        fontSize: 22,
-        lineHeight: 26,
-        fontWeight: '700',
-        color: '#132336',
-        letterSpacing: -0.15,
+        fontSize: 24,
+        fontWeight: '600',
+        letterSpacing: -0.2,
+        color: '#FFFFFF',
+        marginBottom: spacing.xs,
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '500',
     },
     cartButton: {
         width: 48,
@@ -392,9 +397,8 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(220, 252, 247, 0.88)',
-        borderWidth: 1,
-        borderColor: 'rgba(0, 168, 152, 0.22)',
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        zIndex: 1,
     },
     badge: {
         position: 'absolute',

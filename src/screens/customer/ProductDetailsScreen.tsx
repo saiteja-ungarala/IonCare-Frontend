@@ -5,11 +5,10 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
-    Image,
+    Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
@@ -17,6 +16,7 @@ import { Button } from '../../components';
 import { useCartStore } from '../../store/cartStore';
 import storeService, { StoreProduct } from '../../services/storeService';
 import { resolveProductImageSource } from '../../utils/productImage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Icon mapping for product categories
 const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {

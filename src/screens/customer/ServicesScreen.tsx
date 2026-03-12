@@ -5,8 +5,8 @@ import {
     StyleSheet,
     FlatList,
     TouchableOpacity,
-    SafeAreaView,
     ActivityIndicator,
+    StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +16,7 @@ import { RootStackParamList, Service } from '../../models/types';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { customerColors } from '../../theme/customerTheme';
 import { catalogService } from '../../services/catalogService';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ServicesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -110,12 +111,14 @@ export const ServicesScreen = () => {
         );
     };
 
+    const insets = useSafeAreaInsets();
+
     const renderHeader = () => (
         <LinearGradient
             colors={[customerColors.primary, customerColors.primaryDark]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.header}
+            style={[styles.header, { paddingTop: insets.top + spacing.md }]}
         >
             <View style={styles.headerContent}>
                 <Text style={styles.headerTitle}>Our Services</Text>
@@ -129,17 +132,19 @@ export const ServicesScreen = () => {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <View style={styles.container}>
+                <StatusBar barStyle="light-content" backgroundColor={customerColors.primary} />
                 {renderHeader()}
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={customerColors.primary} />
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor={customerColors.primary} />
             {renderHeader()}
             <FlatList
                 data={services}
@@ -149,7 +154,7 @@ export const ServicesScreen = () => {
                 showsVerticalScrollIndicator={false}
                 numColumns={1}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 
@@ -160,7 +165,6 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: spacing.lg,
-        paddingTop: spacing.xxl,
         paddingBottom: spacing.xl,
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,

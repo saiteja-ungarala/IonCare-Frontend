@@ -11,7 +11,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     Alert,
-    SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,6 +18,7 @@ import { colors, spacing, typography, shadows } from '../../theme/theme';
 import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
 import { useAuthStore } from '../../store';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ForgotPasswordScreenProps = {
     navigation: NativeStackNavigationProp<any>;

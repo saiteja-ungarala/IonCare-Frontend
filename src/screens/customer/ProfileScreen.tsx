@@ -1,7 +1,7 @@
 // Profile Screen — Premium design with enhanced visuals
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { profileService } from '../../services/profileService';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ProfileScreenProps = { navigation: NativeStackNavigationProp<any> };
 

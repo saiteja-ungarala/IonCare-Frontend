@@ -5,12 +5,11 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     Alert,
     ActivityIndicator,
-    Modal,
+    Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +18,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { Button } from '../../components';
 import { profileService } from '../../services/profileService';
 import { useBookingsStore } from '../../store';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ServiceDetailsScreenProps = RootStackScreenProps<'ServiceDetails'>;
 

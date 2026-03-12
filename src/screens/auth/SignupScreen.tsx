@@ -5,11 +5,10 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     KeyboardAvoidingView,
-    Platform,
+    Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,6 +16,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { useAuthStore } from '../../store';
 import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type SignupScreenProps = {
     navigation: NativeStackNavigationProp<any>;

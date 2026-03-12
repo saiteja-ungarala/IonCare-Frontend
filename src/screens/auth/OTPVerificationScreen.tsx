@@ -7,10 +7,9 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     ScrollView,
     ImageBackground,
-    ActivityIndicator,
+    ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,6 +17,7 @@ import { RouteProp } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { useAuthStore } from '../../store';
 import { RootStackParamList } from '../../models/types';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'OTPVerification'>;
@@ -42,8 +42,8 @@ export const OTPVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
 
     const activeThemeColor =
         selectedRole === 'agent' ? colors.accent :
-        selectedRole === 'dealer' ? colors.info :
-        colors.primary;
+            selectedRole === 'dealer' ? colors.info :
+                colors.primary;
 
     const isAgent = selectedRole === 'agent';
     const isCustomLogin = selectedRole === 'customer' || selectedRole === 'agent' || selectedRole === 'dealer';

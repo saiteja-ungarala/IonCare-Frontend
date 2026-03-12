@@ -1,7 +1,7 @@
 // Cart Screen - Backend-aware, handles both product and service items
 
 import React, { useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { useCartStore } from '../../store';
 import { BackendCartItem } from '../../store/cartStore';
 import ordersService from '../../services/ordersService';
 import { profileService } from '../../services/profileService';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type CartScreenProps = { navigation: NativeStackNavigationProp<any> };
 

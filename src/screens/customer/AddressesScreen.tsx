@@ -1,13 +1,14 @@
 // Addresses Screen — List, delete, set default
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { profileService } from '../../services/profileService';
 import { Address } from '../../models/types';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = { navigation: NativeStackNavigationProp<any> };
 

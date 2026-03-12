@@ -202,9 +202,25 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
                     isAuthenticated: true,
                     selectedRole: auth.user.role,
                 });
+            } else {
+                // Token was invalid/expired — ensure clean unauthenticated state
+                set({
+                    user: null,
+                    token: null,
+                    refreshToken: null,
+                    isAuthenticated: false,
+                    selectedRole: null,
+                });
             }
         } catch (error) {
-            console.error('Auth check failed:', error);
+            console.warn('[Auth] checkAuth failed:', error);
+            set({
+                user: null,
+                token: null,
+                refreshToken: null,
+                isAuthenticated: false,
+                selectedRole: null,
+            });
         } finally {
             set({ isLoading: false });
         }

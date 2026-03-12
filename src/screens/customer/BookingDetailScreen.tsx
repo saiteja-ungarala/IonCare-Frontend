@@ -3,57 +3,57 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
     Alert,
     Image,
     Modal,
-    RefreshControl,
+    RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackScreenProps, Booking, BookingUpdate, BookingUpdateType } from '../../models/types';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { bookingService } from '../../services/bookingService';
 import { CancelReasonModal } from '../../components/CancelReasonModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = RootStackScreenProps<'BookingDetail'>;
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-    pending:     { label: 'Pending',     color: '#9CA3AF' },
-    confirmed:   { label: 'Confirmed',   color: colors.info },
-    assigned:    { label: 'Assigned',    color: '#F97316' },
+    pending: { label: 'Pending', color: '#9CA3AF' },
+    confirmed: { label: 'Confirmed', color: colors.info },
+    assigned: { label: 'Assigned', color: '#F97316' },
     in_progress: { label: 'In Progress', color: '#EAB308' },
-    completed:   { label: 'Completed',   color: colors.success },
-    cancelled:   { label: 'Cancelled',   color: colors.error },
+    completed: { label: 'Completed', color: colors.success },
+    cancelled: { label: 'Cancelled', color: colors.error },
 };
 
 const UPDATE_ICONS: Record<BookingUpdateType, keyof typeof Ionicons.glyphMap> = {
-    arrived:     'location',
-    diagnosed:   'search',
+    arrived: 'location',
+    diagnosed: 'search',
     in_progress: 'construct',
-    completed:   'checkmark-circle',
-    photo:       'camera',
-    note:        'document-text',
+    completed: 'checkmark-circle',
+    photo: 'camera',
+    note: 'document-text',
 };
 
 const UPDATE_LABELS: Record<BookingUpdateType, string> = {
-    arrived:     'Technician Arrived',
-    diagnosed:   'Diagnosed',
+    arrived: 'Technician Arrived',
+    diagnosed: 'Diagnosed',
     in_progress: 'Work In Progress',
-    completed:   'Job Completed',
-    photo:       'Photo Added',
-    note:        'Note',
+    completed: 'Job Completed',
+    photo: 'Photo Added',
+    note: 'Note',
 };
 
 const UPDATE_COLORS: Record<BookingUpdateType, string> = {
-    arrived:     '#F97316',
-    diagnosed:   colors.info,
+    arrived: '#F97316',
+    diagnosed: colors.info,
     in_progress: '#EAB308',
-    completed:   colors.success,
-    photo:       colors.primary,
-    note:        '#9CA3AF',
+    completed: colors.success,
+    photo: colors.primary,
+    note: '#9CA3AF',
 };
 
 const formatDate = (d: string) => {
@@ -82,13 +82,13 @@ const formatTimestamp = (ts: string) => {
 export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     const { bookingId } = route.params;
 
-    const [booking, setBooking]       = useState<Booking | null>(null);
-    const [updates, setUpdates]       = useState<BookingUpdate[]>([]);
-    const [loading, setLoading]       = useState(true);
+    const [booking, setBooking] = useState<Booking | null>(null);
+    const [updates, setUpdates] = useState<BookingUpdate[]>([]);
+    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [photoModal, setPhotoModal] = useState<string | null>(null);
     const [cancelModal, setCancelModal] = useState(false);
-    const [cancelling, setCancelling]   = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

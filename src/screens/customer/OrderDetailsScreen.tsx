@@ -3,12 +3,11 @@ import {
     ActivityIndicator,
     Alert,
     Image,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,6 +15,7 @@ import { RouteProp } from '@react-navigation/native';
 import { borderRadius, colors, shadows, spacing, typography } from '../../theme/theme';
 import { useOrdersStore } from '../../store/ordersStore';
 import { CancelReasonModal } from '../../components/CancelReasonModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OrderDetailsScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -25,16 +25,16 @@ type OrderDetailsScreenProps = {
 const getStatusLabel = (status: string): string => {
     const value = String(status || '').toLowerCase();
     switch (value) {
-        case 'paid':        return 'Paid';
-        case 'packed':      return 'Packed';
-        case 'shipped':     return 'Shipped';
-        case 'delivered':   return 'Delivered';
-        case 'completed':   return 'Completed';
-        case 'cancelled':   return 'Cancelled';
-        case 'refunded':    return 'Refunded';
-        case 'processing':  return 'Processing';
-        case 'confirmed':   return 'Confirmed';
-        default:            return 'Pending';
+        case 'paid': return 'Paid';
+        case 'packed': return 'Packed';
+        case 'shipped': return 'Shipped';
+        case 'delivered': return 'Delivered';
+        case 'completed': return 'Completed';
+        case 'cancelled': return 'Cancelled';
+        case 'refunded': return 'Refunded';
+        case 'processing': return 'Processing';
+        case 'confirmed': return 'Confirmed';
+        default: return 'Pending';
     }
 };
 
@@ -79,7 +79,7 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
     const { selectedOrder, isLoadingDetail, fetchOrderById, clearSelectedOrder, cancelOrder } = useOrdersStore();
 
     const [cancelModal, setCancelModal] = useState(false);
-    const [cancelling, setCancelling]   = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         if (Number.isFinite(orderId) && orderId > 0) {

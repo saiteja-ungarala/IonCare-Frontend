@@ -1,12 +1,13 @@
 // Wallet Screen
 
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Share, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { useWalletStore, useAuthStore, REFERRAL_CONSTANTS } from '../../store';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const WalletScreen: React.FC = () => {
     const navigation = useNavigation<any>();
@@ -52,68 +53,68 @@ export const WalletScreen: React.FC = () => {
                     <Text style={styles.loadingText}>Loading wallet...</Text>
                 </View>
             ) : (
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                {error ? (
-                    <View style={styles.errorCard}>
-                        <Ionicons name="alert-circle-outline" size={20} color={colors.error} />
-                        <Text style={styles.errorText}>{error}</Text>
-                    </View>
-                ) : null}
-                <LinearGradient colors={[colors.gradientStart, colors.gradientEnd]} style={styles.balanceCard}>
-                    <Text style={styles.balanceLabel}>Available Balance</Text>
-                    <Text style={styles.balanceAmount}>₹{balance}</Text>
-                    <View style={styles.balanceActions}>
-                        <TouchableOpacity style={styles.balanceAction}>
-                            <Ionicons name="add-circle-outline" size={20} color={colors.textOnPrimary} />
-                            <Text style={styles.balanceActionText}>Add Money</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.balanceAction}>
-                            <Ionicons name="arrow-down-circle-outline" size={20} color={colors.textOnPrimary} />
-                            <Text style={styles.balanceActionText}>Withdraw</Text>
-                        </TouchableOpacity>
-                    </View>
-                </LinearGradient>
-
-                <View style={styles.referralCard}>
-                    <View style={styles.referralHeader}>
-                        <Ionicons name="gift" size={32} color={colors.primary} />
-                        <View style={styles.referralContent}>
-                            <Text style={styles.referralTitle}>Refer & Earn</Text>
-                            <Text style={styles.referralDesc}>Get ₹{REFERRAL_CONSTANTS.REFERRER_JOINING_BONUS} for each friend who joins</Text>
+                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+                    {error ? (
+                        <View style={styles.errorCard}>
+                            <Ionicons name="alert-circle-outline" size={20} color={colors.error} />
+                            <Text style={styles.errorText}>{error}</Text>
                         </View>
-                    </View>
-                    <View style={styles.referralCodeBox}>
-                        <Text style={styles.referralCodeLabel}>Your Referral Code</Text>
-                        <Text style={styles.referralCode}>{user?.referralCode || 'AQUA100'}</Text>
-                    </View>
-                    <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-                        <Ionicons name="share-social" size={20} color={colors.textOnPrimary} />
-                        <Text style={styles.shareButtonText}>Share with Friends</Text>
-                    </TouchableOpacity>
-                </View>
+                    ) : null}
+                    <LinearGradient colors={[colors.gradientStart, colors.gradientEnd]} style={styles.balanceCard}>
+                        <Text style={styles.balanceLabel}>Available Balance</Text>
+                        <Text style={styles.balanceAmount}>₹{balance}</Text>
+                        <View style={styles.balanceActions}>
+                            <TouchableOpacity style={styles.balanceAction}>
+                                <Ionicons name="add-circle-outline" size={20} color={colors.textOnPrimary} />
+                                <Text style={styles.balanceActionText}>Add Money</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.balanceAction}>
+                                <Ionicons name="arrow-down-circle-outline" size={20} color={colors.textOnPrimary} />
+                                <Text style={styles.balanceActionText}>Withdraw</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </LinearGradient>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Transaction History</Text>
-                    {transactions.length === 0 ? (
-                        <Text style={styles.emptyText}>No transactions yet</Text>
-                    ) : (
-                        transactions.map((txn) => (
-                            <View key={txn.id} style={styles.txnItem}>
-                                <View style={[styles.txnIcon, { backgroundColor: txn.type === 'credit' ? colors.success + '20' : colors.error + '20' }]}>
-                                    <Ionicons name={txn.type === 'credit' ? 'arrow-down' : 'arrow-up'} size={20} color={txn.type === 'credit' ? colors.success : colors.error} />
-                                </View>
-                                <View style={styles.txnContent}>
-                                    <Text style={styles.txnDesc}>{txn.description}</Text>
-                                    <Text style={styles.txnDate}>{txn.date}</Text>
-                                </View>
-                                <Text style={[styles.txnAmount, { color: txn.type === 'credit' ? colors.success : colors.error }]}>
-                                    {txn.type === 'credit' ? '+' : '-'}₹{txn.amount}
-                                </Text>
+                    <View style={styles.referralCard}>
+                        <View style={styles.referralHeader}>
+                            <Ionicons name="gift" size={32} color={colors.primary} />
+                            <View style={styles.referralContent}>
+                                <Text style={styles.referralTitle}>Refer & Earn</Text>
+                                <Text style={styles.referralDesc}>Get ₹{REFERRAL_CONSTANTS.REFERRER_JOINING_BONUS} for each friend who joins</Text>
                             </View>
-                        ))
-                    )}
-                </View>
-            </ScrollView>
+                        </View>
+                        <View style={styles.referralCodeBox}>
+                            <Text style={styles.referralCodeLabel}>Your Referral Code</Text>
+                            <Text style={styles.referralCode}>{user?.referralCode || 'AQUA100'}</Text>
+                        </View>
+                        <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+                            <Ionicons name="share-social" size={20} color={colors.textOnPrimary} />
+                            <Text style={styles.shareButtonText}>Share with Friends</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Transaction History</Text>
+                        {transactions.length === 0 ? (
+                            <Text style={styles.emptyText}>No transactions yet</Text>
+                        ) : (
+                            transactions.map((txn) => (
+                                <View key={txn.id} style={styles.txnItem}>
+                                    <View style={[styles.txnIcon, { backgroundColor: txn.type === 'credit' ? colors.success + '20' : colors.error + '20' }]}>
+                                        <Ionicons name={txn.type === 'credit' ? 'arrow-down' : 'arrow-up'} size={20} color={txn.type === 'credit' ? colors.success : colors.error} />
+                                    </View>
+                                    <View style={styles.txnContent}>
+                                        <Text style={styles.txnDesc}>{txn.description}</Text>
+                                        <Text style={styles.txnDate}>{txn.date}</Text>
+                                    </View>
+                                    <Text style={[styles.txnAmount, { color: txn.type === 'credit' ? colors.success : colors.error }]}>
+                                        {txn.type === 'credit' ? '+' : '-'}₹{txn.amount}
+                                    </Text>
+                                </View>
+                            ))
+                        )}
+                    </View>
+                </ScrollView>
             )}
         </SafeAreaView>
     );

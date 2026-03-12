@@ -10,8 +10,7 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
-    ImageBackground,
+    ImageBackground
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,6 +18,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { useAuthStore } from '../../store';
 import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type LoginScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -287,70 +287,70 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                                     {/* ── Email Login Tab ── */}
                                     {activeTab === 'email' && <>
 
-                                    <Input
-                                        label="Email"
-                                        placeholder="Enter your email"
-                                        value={email}
-                                        onChangeText={(value) => {
-                                            setEmail(value);
-                                            clearFieldState('email');
-                                        }}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        leftIcon="mail-outline"
-                                        inputContainerStyle={isCustomLogin ? styles.transparentInput : undefined}
-                                        labelStyle={isAgent ? { color: colors.surface } : undefined}
-                                        placeholderTextColor={isAgent ? 'rgba(255, 255, 255, 0.6)' : undefined}
-                                        error={clientFieldErrors.email || fieldErrors.email}
-                                    />
+                                        <Input
+                                            label="Email"
+                                            placeholder="Enter your email"
+                                            value={email}
+                                            onChangeText={(value) => {
+                                                setEmail(value);
+                                                clearFieldState('email');
+                                            }}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                            leftIcon="mail-outline"
+                                            inputContainerStyle={isCustomLogin ? styles.transparentInput : undefined}
+                                            labelStyle={isAgent ? { color: colors.surface } : undefined}
+                                            placeholderTextColor={isAgent ? 'rgba(255, 255, 255, 0.6)' : undefined}
+                                            error={clientFieldErrors.email || fieldErrors.email}
+                                        />
 
-                                    <Input
-                                        label="Password"
-                                        placeholder="Enter your password"
-                                        value={password}
-                                        onChangeText={(value) => {
-                                            setPassword(value);
-                                            clearFieldState('password');
-                                        }}
-                                        secureTextEntry
-                                        leftIcon="lock-closed-outline"
-                                        inputContainerStyle={isCustomLogin ? styles.transparentInput : undefined}
-                                        labelStyle={isAgent ? { color: colors.surface } : undefined}
-                                        placeholderTextColor={isAgent ? 'rgba(255, 255, 255, 0.6)' : undefined}
-                                        error={clientFieldErrors.password || fieldErrors.password}
-                                    />
+                                        <Input
+                                            label="Password"
+                                            placeholder="Enter your password"
+                                            value={password}
+                                            onChangeText={(value) => {
+                                                setPassword(value);
+                                                clearFieldState('password');
+                                            }}
+                                            secureTextEntry
+                                            leftIcon="lock-closed-outline"
+                                            inputContainerStyle={isCustomLogin ? styles.transparentInput : undefined}
+                                            labelStyle={isAgent ? { color: colors.surface } : undefined}
+                                            placeholderTextColor={isAgent ? 'rgba(255, 255, 255, 0.6)' : undefined}
+                                            error={clientFieldErrors.password || fieldErrors.password}
+                                        />
 
-                                    <TouchableOpacity
-                                        style={styles.forgotPassword}
-                                        onPress={() => navigation.navigate('ForgotPassword')}
-                                    >
-                                        <Text style={[styles.forgotPasswordText, { color: activeThemeColor }]}>Forgot Password?</Text>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.forgotPassword}
+                                            onPress={() => navigation.navigate('ForgotPassword')}
+                                        >
+                                            <Text style={[styles.forgotPasswordText, { color: activeThemeColor }]}>Forgot Password?</Text>
+                                        </TouchableOpacity>
 
-                                    <Button
-                                        title="Login"
-                                        onPress={handleLogin}
-                                        loading={isLoading}
-                                        fullWidth
-                                        style={{ backgroundColor: activeThemeColor, shadowColor: activeThemeColor }}
-                                    />
+                                        <Button
+                                            title="Login"
+                                            onPress={handleLogin}
+                                            loading={isLoading}
+                                            fullWidth
+                                            style={{ backgroundColor: activeThemeColor, shadowColor: activeThemeColor }}
+                                        />
 
-                                    <View style={styles.divider}>
-                                        <View style={styles.dividerLine} />
-                                        <Text style={styles.dividerText}>or</Text>
-                                        <View style={styles.dividerLine} />
-                                    </View>
+                                        <View style={styles.divider}>
+                                            <View style={styles.dividerLine} />
+                                            <Text style={styles.dividerText}>or</Text>
+                                            <View style={styles.dividerLine} />
+                                        </View>
 
-                                    <Button
-                                        title="Login with OTP"
-                                        onPress={handleOtpLogin}
-                                        variant="outline"
-                                        fullWidth
-                                        disabled={isLoading}
-                                        icon={<Ionicons name="phone-portrait" size={18} color={activeThemeColor} />}
-                                        style={{ borderColor: activeThemeColor }}
-                                        textStyle={{ color: activeThemeColor }}
-                                    />
+                                        <Button
+                                            title="Login with OTP"
+                                            onPress={handleOtpLogin}
+                                            variant="outline"
+                                            fullWidth
+                                            disabled={isLoading}
+                                            icon={<Ionicons name="phone-portrait" size={18} color={activeThemeColor} />}
+                                            style={{ borderColor: activeThemeColor }}
+                                            textStyle={{ color: activeThemeColor }}
+                                        />
                                     </>}
                                 </View>
 

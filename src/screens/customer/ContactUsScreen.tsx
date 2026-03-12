@@ -1,10 +1,11 @@
 // Contact Us Screen
 
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Configurable constants
 const SUPPORT = {

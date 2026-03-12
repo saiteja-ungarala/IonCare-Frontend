@@ -3,7 +3,6 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     TextInput,
@@ -19,11 +18,11 @@ import { RootStackParamList } from '../../models/types';
 import { agentTheme } from '../../theme/agentTheme';
 import { agentService } from '../../services/agentService';
 import { showAgentToast } from '../../utils/agentToast';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingUpdate'>;
 
 type UpdateType = 'arrived' | 'diagnosed' | 'in_progress' | 'completed' | 'note';
-
 interface UpdateTypeOption {
     value: UpdateType;
     label: string;
@@ -32,11 +31,11 @@ interface UpdateTypeOption {
 }
 
 const UPDATE_TYPES: UpdateTypeOption[] = [
-    { value: 'arrived',     label: 'Arrived',     icon: 'location',       color: '#F97316' },
-    { value: 'diagnosed',   label: 'Diagnosed',   icon: 'search',         color: agentTheme.colors.agentPrimary },
-    { value: 'in_progress', label: 'In Progress', icon: 'construct',      color: '#3B82F6' },
-    { value: 'completed',   label: 'Completed',   icon: 'checkmark-circle', color: agentTheme.colors.success },
-    { value: 'note',        label: 'Add Note',    icon: 'document-text',  color: agentTheme.colors.textSecondary },
+    { value: 'arrived', label: 'Arrived', icon: 'location', color: '#F97316' },
+    { value: 'diagnosed', label: 'Diagnosed', icon: 'search', color: agentTheme.colors.agentPrimary },
+    { value: 'in_progress', label: 'In Progress', icon: 'construct', color: '#3B82F6' },
+    { value: 'completed', label: 'Completed', icon: 'checkmark-circle', color: agentTheme.colors.success },
+    { value: 'note', label: 'Add Note', icon: 'document-text', color: agentTheme.colors.textSecondary },
 ];
 
 const C = agentTheme.colors;

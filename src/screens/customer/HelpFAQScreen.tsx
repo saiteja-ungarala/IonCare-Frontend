@@ -1,10 +1,11 @@
 // Help & FAQ Screen
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const FAQ_DATA = [
     { q: 'How do I book a service?', a: 'Go to the Home tab, browse available services, select one, pick a date & time, and confirm your booking.' },

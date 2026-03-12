@@ -3,7 +3,6 @@ import {
     ActivityIndicator,
     Image,
     RefreshControl,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
@@ -16,6 +15,7 @@ import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { borderRadius, colors, shadows, spacing, typography } from '../../theme/theme';
 import { OrderListItem } from '../../services/ordersService';
 import { useOrdersStore } from '../../store/ordersStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OrderHistoryScreenProps = {
     navigation: NativeStackNavigationProp<any>;

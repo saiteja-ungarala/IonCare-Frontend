@@ -8,10 +8,11 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    SafeAreaView,
     Alert,
     Dimensions,
+    StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -140,160 +141,203 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
         loadBanners();
     }, []);
 
+    const insets = useSafeAreaInsets();
+
     return (
-        <SafeAreaView style={styles.container}>
-            {/* AppBar */}
-            <AppBar
-                location="Select Location"
-                onLocationPress={() => Alert.alert('Location', 'Location selector coming soon!')}
-                onNotificationPress={() => Alert.alert('Notifications', 'No new notifications')}
-                onProfilePress={() => navigation.navigate('Profile')}
-            />
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor={customerColors.primary} />
+            <View style={styles.mainContent}>
+                {/* Premium Teal Header */}
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.premiumHeader, { paddingTop: insets.top + spacing.xs }]}
+                >
+                    {/* Background Decor */}
+                    <Ionicons name="water" size={180} color="rgba(255,255,255,0.06)" style={styles.headerBgDecor} />
+                    <Ionicons name="sparkles" size={50} color="rgba(255,255,255,0.06)" style={styles.headerBgDecor2} />
 
-            <ScrollView
-                style={styles.scrollView}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-            >
-                {/* Search Bar */}
-                <TouchableOpacity style={styles.searchBar} activeOpacity={0.7} onPress={() => navigation.navigate('Search')}>
-                    <View style={styles.searchIconWrap}>
-                        <Ionicons name="search" size={18} color={customerColors.primary} />
-                    </View>
-                    <Text style={styles.searchPlaceholder}>Search services & products</Text>
-                    <View style={styles.searchMic}>
-                        <Ionicons name="mic-outline" size={18} color={colors.textMuted} />
-                    </View>
-                </TouchableOpacity>
-
-                {/* Category Chips */}
-                <CategoryChip
-                    categories={categories}
-                    selectedId={selectedCategory}
-                    onSelect={setSelectedCategory}
-                    customColors={customerColors}
-                />
-
-                {/* Promotional Banners */}
-                <BannerCarousel
-                    banners={banners}
-                    onBannerPress={(banner) => Alert.alert('Banner', `Pressed: ${banner.title}`)}
-                />
-
-                {/* Book Service Section */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <View style={styles.sectionTitleWrap}>
-                            <View style={[styles.sectionAccent, { backgroundColor: customerColors.primary }]} />
-                            <Text style={styles.sectionTitle}>Popular Services</Text>
-                        </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('Services')} style={styles.viewAllBtn}>
-                            <Text style={styles.viewAll}>View All</Text>
-                            <Ionicons name="arrow-forward" size={14} color={customerColors.primary} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.serviceGrid}>
-                        {services.slice(0, 4).map((service) => (
-                            <ServiceCard
-                                key={service.id}
-                                service={service}
-                                onPress={() =>
-                                    navigation.navigate('ServiceDetails', { service })
-                                }
-                                compact
-                                customColors={customerColors}
-                            />
-                        ))}
-                    </View>
-                </View>
-
-                {/* Referral Banner */}
-                <TouchableOpacity style={styles.referralBanner} activeOpacity={0.8}>
-                    <LinearGradient
-                        colors={['#E8F5E9', '#F1F8E9']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.referralGradient}
-                    >
-                        <View style={styles.referralIconWrap}>
-                            <Ionicons name="gift" size={24} color={'#7FA650'} />
-                        </View>
-                        <View style={styles.referralContent}>
-                            <Text style={styles.referralTitle}>Refer & Earn ₹500</Text>
-                            <Text style={styles.referralDesc}>Invite friends to AquaCare</Text>
-                        </View>
-                        <View style={styles.referralArrow}>
-                            <Ionicons name="arrow-forward" size={18} color={'#7FA650'} />
-                        </View>
-                    </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Water Products Section */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <View style={styles.sectionTitleWrap}>
-                            <View style={[styles.sectionAccent, { backgroundColor: '#FF7043' }]} />
-                            <Text style={styles.sectionTitle}>Water Products</Text>
-                        </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('Store')} style={styles.viewAllBtn}>
-                            <Text style={styles.viewAll}>View All</Text>
-                            <Ionicons name="arrow-forward" size={14} color={customerColors.primary} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.productGrid}>
-                        {products.slice(0, 4).map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                onPress={() => navigation.navigate('Store')}
-                                onAddToCart={() => navigation.navigate('Store')}
-                            />
-                        ))}
-                    </View>
-                </View>
-
-                {/* Why Choose Us Section */}
-                <View style={styles.whyChooseSection}>
-                    <View style={styles.sectionTitleWrap}>
-                        <View style={[styles.sectionAccent, { backgroundColor: '#7C4DFF' }]} />
-                        <Text style={styles.sectionTitle}>Why Choose AquaCare?</Text>
-                    </View>
-
-                    <View style={styles.featuresGrid}>
-                        {[
-                            { icon: 'shield-checkmark', title: 'Verified Experts', desc: 'Background checked' },
-                            { icon: 'time', title: 'On-Time Service', desc: '30 mins or refund' },
-                            { icon: 'pricetag', title: 'Best Prices', desc: 'Transparent pricing' },
-                            { icon: 'headset', title: '24/7 Support', desc: 'Always here to help' },
-                        ].map((feature, index) => (
-                            <View key={index} style={styles.featureItem}>
-                                <View style={[styles.featureIcon, { backgroundColor: FEATURE_COLORS[index] + '15' }]}>
-                                    <Ionicons
-                                        name={feature.icon as any}
-                                        size={22}
-                                        color={FEATURE_COLORS[index]}
-                                    />
-                                </View>
-                                <Text style={styles.featureTitle} numberOfLines={1}>{feature.title}</Text>
-                                <Text style={styles.featureDesc} numberOfLines={1}>{feature.desc}</Text>
+                    <View style={styles.headerTopRow}>
+                        <TouchableOpacity style={styles.headerLocationBtn} activeOpacity={0.7} onPress={() => Alert.alert('Location', 'Location selector coming soon!')}>
+                            <View style={styles.headerLocationIcon}>
+                                <Ionicons name="location" size={20} color={customerColors.primaryDark} />
                             </View>
-                        ))}
+                            <View style={styles.headerLocationTextWrap}>
+                                <Text style={styles.headerLocationLabel}>DELIVER TO</Text>
+                                <View style={styles.headerLocationRow}>
+                                    <Text style={styles.headerLocationText} numberOfLines={1}>Select Location</Text>
+                                    <Ionicons name="chevron-down" size={16} color="#FFFFFF" style={{ marginLeft: 4, marginTop: 1 }} />
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+
+                        <View style={styles.headerActions}>
+                            <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Profile')}>
+                                <Ionicons name="person-outline" size={22} color="#FFFFFF" />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.headerIconBtn} onPress={() => Alert.alert('Notifications', 'No new notifications')}>
+                                <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
+                                {/* Notification Badge */}
+                                <View style={styles.headerBadge}>
+                                    <Text style={styles.headerBadgeText}>2</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
 
-                {/* Bottom spacer */}
-                <View style={{ height: spacing.xl }} />
-            </ScrollView>
+                    <View style={styles.headerGreeting}>
+                        <Text style={styles.headerGreetingTitle}>Our Services</Text>
+                        <Text style={styles.headerGreetingSub}>Select a service to book</Text>
+                    </View>
 
-            {/* Login Celebration Animation Overlay */}
-            {showLoginCelebration && (
-                <BubbleCelebration
-                    onComplete={() => setShowLoginCelebration(false)}
-                />
-            )}
-        </SafeAreaView>
+                    {/* Integrated Translucent Search Bar */}
+                    <TouchableOpacity style={styles.integratedSearchBar} activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
+                        <View style={styles.searchIconCustom}>
+                            <Ionicons name="search" size={18} color="#FFFFFF" />
+                        </View>
+                        <Text style={styles.searchPlaceholderCustom}>Search services, filters, spares...</Text>
+                        <View style={styles.searchMicCustom}>
+                            <Ionicons name="mic" size={18} color="#FFFFFF" />
+                        </View>
+                    </TouchableOpacity>
+                </LinearGradient>
+
+                <ScrollView
+                    style={styles.scrollView}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
+                >
+
+                    {/* Category Chips */}
+                    <CategoryChip
+                        categories={categories}
+                        selectedId={selectedCategory}
+                        onSelect={setSelectedCategory}
+                        customColors={customerColors}
+                    />
+
+                    {/* Promotional Banners */}
+                    <BannerCarousel
+                        banners={banners}
+                        onBannerPress={(banner) => Alert.alert('Banner', `Pressed: ${banner.title}`)}
+                    />
+
+                    {/* Book Service Section */}
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <View style={styles.sectionTitleWrap}>
+                                <View style={[styles.sectionAccent, { backgroundColor: customerColors.primary }]} />
+                                <Text style={styles.sectionTitle}>Popular Services</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => navigation.navigate('Services')} style={styles.viewAllBtn}>
+                                <Text style={styles.viewAll}>View All</Text>
+                                <Ionicons name="arrow-forward" size={14} color={customerColors.primary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.serviceGrid}>
+                            {services.slice(0, 4).map((service) => (
+                                <ServiceCard
+                                    key={service.id}
+                                    service={service}
+                                    onPress={() =>
+                                        navigation.navigate('ServiceDetails', { service })
+                                    }
+                                    compact
+                                    customColors={customerColors}
+                                />
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Referral Banner */}
+                    <TouchableOpacity style={styles.referralBanner} activeOpacity={0.8}>
+                        <LinearGradient
+                            colors={['#E8F5E9', '#F1F8E9']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.referralGradient}
+                        >
+                            <View style={styles.referralIconWrap}>
+                                <Ionicons name="gift" size={24} color={'#7FA650'} />
+                            </View>
+                            <View style={styles.referralContent}>
+                                <Text style={styles.referralTitle}>Refer & Earn ₹500</Text>
+                                <Text style={styles.referralDesc}>Invite friends to AquaCare</Text>
+                            </View>
+                            <View style={styles.referralArrow}>
+                                <Ionicons name="arrow-forward" size={18} color={'#7FA650'} />
+                            </View>
+                        </LinearGradient>
+                    </TouchableOpacity>
+
+                    {/* Water Products Section */}
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <View style={styles.sectionTitleWrap}>
+                                <View style={[styles.sectionAccent, { backgroundColor: '#FF7043' }]} />
+                                <Text style={styles.sectionTitle}>Water Products</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => navigation.navigate('Store')} style={styles.viewAllBtn}>
+                                <Text style={styles.viewAll}>View All</Text>
+                                <Ionicons name="arrow-forward" size={14} color={customerColors.primary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.productGrid}>
+                            {products.slice(0, 4).map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    onPress={() => navigation.navigate('Store')}
+                                    onAddToCart={() => navigation.navigate('Store')}
+                                />
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Why Choose Us Section */}
+                    <View style={styles.whyChooseSection}>
+                        <View style={styles.sectionTitleWrap}>
+                            <View style={[styles.sectionAccent, { backgroundColor: '#7C4DFF' }]} />
+                            <Text style={styles.sectionTitle}>Why Choose AquaCare?</Text>
+                        </View>
+
+                        <View style={styles.featuresGrid}>
+                            {[
+                                { icon: 'shield-checkmark', title: 'Verified Experts', desc: 'Background checked' },
+                                { icon: 'time', title: 'On-Time Service', desc: '30 mins or refund' },
+                                { icon: 'pricetag', title: 'Best Prices', desc: 'Transparent pricing' },
+                                { icon: 'headset', title: '24/7 Support', desc: 'Always here to help' },
+                            ].map((feature, index) => (
+                                <View key={index} style={styles.featureItem}>
+                                    <View style={[styles.featureIcon, { backgroundColor: FEATURE_COLORS[index] + '15' }]}>
+                                        <Ionicons
+                                            name={feature.icon as any}
+                                            size={22}
+                                            color={FEATURE_COLORS[index]}
+                                        />
+                                    </View>
+                                    <Text style={styles.featureTitle} numberOfLines={1}>{feature.title}</Text>
+                                    <Text style={styles.featureDesc} numberOfLines={1}>{feature.desc}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Bottom spacer */}
+                    <View style={{ height: spacing.xl }} />
+                </ScrollView>
+
+                {/* Login Celebration Animation Overlay */}
+                {showLoginCelebration && (
+                    <BubbleCelebration
+                        onComplete={() => setShowLoginCelebration(false)}
+                    />
+                )}
+            </View>
+        </View>
     );
 };
 
@@ -302,48 +346,165 @@ const CARD_WIDTH = (SCREEN_WIDTH - GRID_PAD * 2 - GRID_GAP) / 2;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: customerColors.primary,
+    },
+    mainContent: {
+        flex: 1,
         backgroundColor: '#F5F8FA',
     },
-    scrollView: {
-        flex: 1,
+    premiumHeader: {
+        paddingHorizontal: GRID_PAD,
+        paddingTop: spacing.xs,
+        paddingBottom: spacing.lg,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        position: 'relative',
+        overflow: 'hidden',
     },
-    scrollContent: {
-        paddingBottom: spacing.xl,
+    headerBgDecor: {
+        position: 'absolute',
+        right: -40,
+        top: -30,
+        transform: [{ rotate: '-10deg' }],
     },
-    searchBar: {
+    headerBgDecor2: {
+        position: 'absolute',
+        left: -10,
+        top: '40%',
+        transform: [{ rotate: '25deg' }],
+    },
+    headerTopRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start', // Allows children to align independently
+        justifyContent: 'space-between',
+        marginBottom: spacing.xs, // Reduced margin significantly
+    },
+    headerLocationBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: GRID_PAD,
-        marginTop: spacing.md,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: '#E8EFF3',
-        shadowColor: 'rgba(0,0,0,0.06)',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 8,
-        elevation: 2,
+        flex: 1,
+        maxWidth: '65%',
     },
-    searchIconWrap: {
-        width: 32,
-        height: 32,
-        borderRadius: 10,
-        backgroundColor: customerColors.primaryLight,
+    headerLocationIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 14,
+        backgroundColor: '#FFFFFF',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.sm,
     },
-    searchPlaceholder: {
+    headerLocationTextWrap: {
+        flex: 1,
+    },
+    headerLocationLabel: {
+        fontSize: 10,
+        color: 'rgba(255,255,255,0.8)',
+        textTransform: 'uppercase',
+        fontWeight: '700',
+        letterSpacing: 1,
+        marginBottom: 2,
+    },
+    headerLocationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerLocationText: {
+        fontSize: 15,
+        color: '#FFFFFF',
+        fontWeight: '700',
+    },
+    headerActions: {
+        flexDirection: 'row',
+        gap: spacing.sm,
+        marginTop: 10, // Nudges the icons down inside the flex-start container
+    },
+    headerIconBtn: {
+        width: 42,
+        height: 42,
+        borderRadius: 14,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerBadge: {
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        backgroundColor: '#FF7043', // Customer accent red/orange
+        borderRadius: 12,
+        minWidth: 20,
+        height: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: customerColors.primaryDark,
+    },
+    headerBadgeText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    headerGreeting: {
+        marginTop: spacing.xs,
+        paddingLeft: spacing.xs,
+        paddingBottom: spacing.xs,
+    },
+    headerGreetingTitle: {
+        fontSize: 24,
+        fontWeight: '600',
+        letterSpacing: -0.2,
+        color: '#FFFFFF',
+        marginBottom: spacing.xs,
+    },
+    headerGreetingSub: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '500',
+        marginBottom: 2,
+    },
+    integratedSearchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 24,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: spacing.sm,
+        marginTop: spacing.xs,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.25)',
+    },
+    searchIconCustom: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.sm,
+    },
+    searchPlaceholderCustom: {
         flex: 1,
         fontSize: 14,
-        color: colors.textMuted,
-        fontWeight: '500',
+        color: 'rgba(255,255,255,0.85)',
+        fontWeight: '400',
     },
-    searchMic: {
+    searchMicCustom: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
         marginLeft: spacing.xs,
+    },
+    scrollView: {
+        flex: 1,
+        marginTop: spacing.sm,
+    },
+    scrollContent: {
+        paddingBottom: spacing.xl,
+        paddingTop: spacing.xs,
     },
     section: {
         marginTop: spacing.lg + 4,

@@ -1,10 +1,11 @@
 // Payment Methods Screen — Coming Soon
 
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = { navigation: NativeStackNavigationProp<any> };
 

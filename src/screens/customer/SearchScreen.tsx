@@ -8,9 +8,8 @@ import {
     TouchableOpacity,
     FlatList,
     ActivityIndicator,
-    SafeAreaView,
     Keyboard,
-    Image,
+    Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,6 +19,7 @@ import storeService, { StoreProduct } from '../../services/storeService';
 import { Service } from '../../models/types';
 import { useDebounce } from 'use-debounce';
 import { resolveProductImageSource } from '../../utils/productImage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type SearchScreenProps = { navigation: NativeStackNavigationProp<any> };
 
@@ -101,23 +101,23 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ navigation }) => {
         const imageSource = resolveProductImageSource(item.imageUrl);
 
         return (
-        <TouchableOpacity
-            style={styles.resultItem}
-            onPress={() => navigation.navigate('ProductDetails', { productId: item.id })}
-        >
-            <View style={[styles.iconBox, { backgroundColor: colors.secondary + '20' }]}>
-                {imageSource ? (
-                    <Image source={imageSource} style={styles.productThumb} resizeMode="cover" />
-                ) : (
-                    <Ionicons name="cube" size={20} color={colors.secondary} />
-                )}
-            </View>
-            <View style={styles.resultInfo}>
-                <Text style={styles.resultTitle}>{item.name}</Text>
-                <Text style={styles.resultSub}>₹{item.price}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-        </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.resultItem}
+                onPress={() => navigation.navigate('ProductDetails', { productId: item.id })}
+            >
+                <View style={[styles.iconBox, { backgroundColor: colors.secondary + '20' }]}>
+                    {imageSource ? (
+                        <Image source={imageSource} style={styles.productThumb} resizeMode="cover" />
+                    ) : (
+                        <Ionicons name="cube" size={20} color={colors.secondary} />
+                    )}
+                </View>
+                <View style={styles.resultInfo}>
+                    <Text style={styles.resultTitle}>{item.name}</Text>
+                    <Text style={styles.resultSub}>₹{item.price}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
         );
     };
 

@@ -137,20 +137,24 @@ function CustomerTabs() {
 
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: colors.tabBarActive,
-                tabBarInactiveTintColor: colors.tabBarInactive,
+                tabBarActiveTintColor: '#FFFFFF',
+                tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
                 headerShown: false,
                 tabBarLabelStyle: {
                     fontSize: 11,
-                    fontWeight: '500',
+                    fontWeight: '600',
                 },
                 tabBarStyle: {
-                    backgroundColor: colors.tabBarBackground,
+                    backgroundColor: customerColors.primary,
                     paddingBottom: 8,
                     paddingTop: 8,
                     height: 62,
-                    borderTopWidth: 1,
-                    borderTopColor: colors.tabBarBorder,
+                    borderTopWidth: 0,
+                    elevation: 10,
+                    shadowColor: customerColors.primary,
+                    shadowOffset: { width: 0, height: -4 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 8,
                 },
             })}
         >
@@ -168,17 +172,17 @@ function CustomerTabs() {
                                 width: 60,
                                 height: 60,
                                 borderRadius: 30,
-                                backgroundColor: customerColors.primary,
+                                backgroundColor: '#FFFFFF',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                shadowColor: customerColors.primary,
+                                shadowColor: '#000000',
                                 shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 4,
+                                shadowOpacity: 0.15,
+                                shadowRadius: 8,
                                 elevation: 6,
                             }}
                         >
-                            <Ionicons name="wallet" size={28} color={customerColors.textOnPrimary} />
+                            <Ionicons name="wallet" size={28} color={customerColors.primary} />
                         </View>
                     ),
                 }}

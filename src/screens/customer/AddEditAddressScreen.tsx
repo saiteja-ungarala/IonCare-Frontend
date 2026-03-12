@@ -1,7 +1,7 @@
 // Add / Edit Address Screen
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Switch, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, Switch, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { profileService } from '../../services/profileService';
 import { Address, RootStackParamList } from '../../models/types';
 import { requestLocationPermission, getCurrentLocation, reverseGeocode } from '../../utils/location';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'AddEditAddress'>;

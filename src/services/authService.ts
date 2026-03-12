@@ -188,7 +188,8 @@ export const authService = {
             console.log('[Auth] Token validated, user:', user.email);
             return { user, token };
         } catch (error: any) {
-            console.error('[Auth] checkAuth error:', error.response?.data || error.message);
+            // Expected when token is expired/invalid — not a real error
+            console.warn('[Auth] checkAuth: token invalid or expired, clearing session.');
             // Token is invalid, clear storage
             await storage.deleteItem(STORAGE_KEYS.AUTH_TOKEN);
             await storage.deleteItem(STORAGE_KEYS.REFRESH_TOKEN);

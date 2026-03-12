@@ -5,15 +5,16 @@ import {
     StyleSheet,
     StatusBar,
     Image,
-    SafeAreaView,
     ImageBackground,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { useAuthStore } from '../../store';
 import { UserRole } from '../../models/types';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     AnimatedPressable,
     FadeInView,

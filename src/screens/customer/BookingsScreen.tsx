@@ -5,7 +5,6 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
@@ -14,14 +13,17 @@ import {
     Modal,
     TextInput,
     Platform,
+    StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { customerColors } from '../../theme/customerTheme';
 import { useBookingsStore } from '../../store';
 import { Booking } from '../../models/types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type BookingsScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -344,7 +346,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
                                     )}
                                 </ScrollView>
 
-                                <View style={styles.cancelModalFooter}>
+                                <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
                                     <TouchableOpacity style={styles.keepBtn} onPress={closeCancelFlow}>
                                         <Text style={styles.keepBtnText}>Keep Booking</Text>
                                     </TouchableOpacity>
@@ -401,19 +403,34 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
         );
     };
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                {route.params?.enableBack && (
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                )}
-                <Text style={styles.headerTitle}>My Bookings</Text>
-            </View>
+    const insets = useSafeAreaInsets();
 
-            {/* Tab bar with pill style */}
-            <View style={styles.tabContainer}>
+    return (
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor={customerColors.primary} />
+            {/* Gradient Header */}
+            <LinearGradient
+                colors={['#A7F3D0', customerColors.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.gradientHeader, { paddingTop: insets.top + spacing.md }]}
+            >
+                {/* Background Decor */}
+                <Ionicons name="calendar" size={100} color="rgba(255,255,255,0.08)" style={styles.headerBgDecor} />
+
+                <View style={styles.headerTopRow}>
+                    {route.params?.enableBack && (
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    )}
+                    <View style={styles.headerContent}>
+                        <Text style={styles.headerTitle}>My Bookings</Text>
+                        <Text style={styles.headerSubtitle}>Track your service appointments</Text>
+                    </View>
+                </View>
+
+                {/* Tabs inside the gradient */}
                 <View style={styles.tabPillRow}>
                     {TABS.map((tab) => (
                         <TouchableOpacity
@@ -427,7 +444,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
                         </TouchableOpacity>
                     ))}
                 </View>
-            </View>
+            </LinearGradient>
 
             {isLoading && !refreshing ? (
                 <View style={styles.loadingContainer}>
@@ -455,50 +472,62 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
             )}
 
             {renderCancelModal()}
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F5F8FA' },
-    header: {
+    gradientHeader: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.lg,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    headerBgDecor: {
+        position: 'absolute',
+        right: -15,
+        top: 10,
+        transform: [{ rotate: '-15deg' }],
+    },
+    headerTopRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.md,
-        paddingVertical: spacing.md + 2,
-        backgroundColor: '#FFFFFF',
-        shadowColor: 'rgba(0,0,0,0.05)',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 6,
-        elevation: 2,
+        marginBottom: spacing.md,
     },
     backButton: {
         marginRight: spacing.md,
         width: 36,
         height: 36,
         borderRadius: 10,
+        backgroundColor: 'rgba(255,255,255,0.2)',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: colors.text,
+    headerContent: {
+        flex: 1,
     },
-    tabContainer: {
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm + 2,
-        backgroundColor: '#FFFFFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#EEF2F5',
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: '600',
+        letterSpacing: -0.2,
+        color: '#FFFFFF',
+        marginBottom: spacing.xs,
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '500',
     },
     tabPillRow: {
         flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 12,
         padding: 3,
     },
+
     tab: {
         flex: 1,
         paddingVertical: spacing.sm + 2,
@@ -515,7 +544,7 @@ const styles = StyleSheet.create({
     },
     tabText: {
         fontSize: 14,
-        color: colors.textSecondary,
+        color: 'rgba(255,255,255,0.7)',
         fontWeight: '600',
     },
     activeTabText: {
@@ -785,7 +814,7 @@ const styles = StyleSheet.create({
     cancelModalFooter: {
         flexDirection: 'row',
         padding: spacing.lg,
-        paddingBottom: Platform.OS === 'ios' ? spacing.xl : spacing.lg,
+
         gap: spacing.md,
         borderTopWidth: 1,
         borderTopColor: '#F0F3F5',

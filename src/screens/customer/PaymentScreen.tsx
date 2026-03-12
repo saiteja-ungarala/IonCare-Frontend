@@ -3,12 +3,11 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     TouchableOpacity,
     Modal,
     ActivityIndicator,
     Platform,
-    ScrollView,
+    ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +16,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { paymentService } from '../../services/paymentService';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // react-native-razorpay doesn't ship types; require to avoid TS errors
 // eslint-disable-next-line @typescript-eslint/no-var-requires

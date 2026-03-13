@@ -12,10 +12,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { borderRadius, colors, shadows, spacing, typography } from '../../theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { borderRadius, spacing, typography, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useOrdersStore } from '../../store/ordersStore';
 import { CancelReasonModal } from '../../components/CancelReasonModal';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OrderDetailsScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -43,17 +44,17 @@ const getStatusColor = (status: string): string => {
     switch (value) {
         case 'delivered':
         case 'completed':
-            return colors.success;
+            return customerColors.success;
         case 'cancelled':
         case 'refunded':
-            return colors.error;
+            return customerColors.error;
         case 'packed':
         case 'pending':
-            return colors.warning;
+            return customerColors.warning;
         case 'shipped':
-            return colors.info;
+            return customerColors.info;
         default:
-            return colors.primary;
+            return customerColors.primary;
     }
 };
 
@@ -69,7 +70,7 @@ const formatDate = (dateStr?: string): string => {
 
 const formatAddress = (address: any): string => {
     if (!address) return 'Address unavailable';
-    return [address.line1, address.line2, address.city, address.state, address.postalCode, address.country]
+    return [address.line1, address.line2, address.city, address.state, address.postal_code, address.country]
         .filter(Boolean)
         .join(', ');
 };
@@ -109,17 +110,28 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
 
     if (isLoadingDetail || !selectedOrder) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Order Details</Text>
-                </View>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.header, { paddingTop: 60 }]}
+                >
+                    <Ionicons name="receipt" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>Order Details</Text>
+                            <Text style={styles.headerSubtitle}>Fetching your order info...</Text>
+                        </View>
+                    </View>
+                </LinearGradient>
                 <View style={styles.loaderWrap}>
-                    <ActivityIndicator size="large" color={colors.primary} />
+                    <ActivityIndicator size="large" color={customerColors.primary} />
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
@@ -127,19 +139,30 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
     const canCancel = selectedOrder.status === 'pending' || selectedOrder.status === 'paid';
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Order Details</Text>
-            </View>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: 60 }]}
+            >
+                <Ionicons name="receipt" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>Order #{selectedOrder.id}</Text>
+                        <Text style={styles.headerSubtitle}>View and track your package status</Text>
+                    </View>
+                </View>
+            </LinearGradient>
 
             <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                {/* Order header */}
+                {/* Order header information - Refined summary instead of duplicating ID */}
                 <View style={styles.sectionCard}>
                     <View style={styles.topRow}>
-                        <Text style={styles.orderId}>Order #{selectedOrder.id}</Text>
+                        <Text style={styles.orderSummaryTitle}>Overview</Text>
                         <View style={[styles.badge, { backgroundColor: `${statusColor}20` }]}>
                             <Text style={[styles.badgeText, { color: statusColor }]}>
                                 {getStatusLabel(selectedOrder.status)}
@@ -147,7 +170,7 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
                         </View>
                     </View>
                     <Text style={styles.metaText}>Placed on {formatDate(selectedOrder.createdAt)}</Text>
-                    <Text style={styles.metaText}>Payment: {selectedOrder.paymentStatus}</Text>
+                    <Text style={styles.metaText}>Payment: <Text style={{ color: selectedOrder.paymentStatus?.toLowerCase() === 'paid' ? customerColors.success : customerColors.warning, fontWeight: '700' }}>{selectedOrder.paymentStatus}</Text></Text>
                 </View>
 
                 {/* Delivery address */}
@@ -165,7 +188,7 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
                                 {item.imageUrl ? (
                                     <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
                                 ) : (
-                                    <Ionicons name="cube-outline" size={18} color={colors.primary} />
+                                    <Ionicons name="cube-outline" size={18} color={customerColors.primary} />
                                 )}
                             </View>
                             <View style={styles.itemInfo}>
@@ -206,7 +229,7 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
                         style={styles.cancelBtn}
                         onPress={() => setCancelModal(true)}
                     >
-                        <Ionicons name="close-circle-outline" size={18} color={colors.error} />
+                        <Ionicons name="close-circle-outline" size={18} color={customerColors.error} />
                         <Text style={styles.cancelBtnText}>Cancel Order</Text>
                     </TouchableOpacity>
                 )}
@@ -220,48 +243,76 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
                 onClose={() => setCancelModal(false)}
                 onConfirm={handleCancelConfirm}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
+    container: { flex: 1, backgroundColor: customerColors.background },
     header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.md,
-        backgroundColor: colors.surface,
-        ...shadows.sm,
     },
-    backButton: { marginRight: spacing.md },
-    headerTitle: { ...typography.h3, color: colors.text },
-    loaderWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.headerTitle,
+        color: customerColors.textOnPrimary,
+        fontSize: 22,
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
     scroll: { flex: 1 },
-    scrollContent: { padding: spacing.md, paddingBottom: spacing.xxl },
+    scrollContent: { padding: spacing.lg },
+    loaderWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
     sectionCard: {
-        backgroundColor: colors.surface,
+        backgroundColor: customerColors.surface,
         borderRadius: borderRadius.lg,
         padding: spacing.md,
         marginBottom: spacing.md,
         ...shadows.sm,
     },
     topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    orderId: { ...typography.body, fontWeight: '700', color: colors.text },
+    orderSummaryTitle: { ...typography.body, fontWeight: '700', color: customerColors.text },
     badge: { borderRadius: borderRadius.sm, paddingHorizontal: spacing.sm, paddingVertical: 3 },
     badgeText: { ...typography.caption, fontWeight: '700' },
-    metaText: { ...typography.bodySmall, color: colors.textSecondary, marginTop: spacing.xs },
+    metaText: { ...typography.bodySmall, color: customerColors.textSecondary, marginTop: spacing.xs },
 
-    sectionTitle: { ...typography.body, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
-    bodyText: { ...typography.bodySmall, color: colors.textSecondary },
+    sectionTitle: { ...typography.body, fontWeight: '700', color: customerColors.text, marginBottom: spacing.sm },
+    bodyText: { ...typography.bodySmall, color: customerColors.textSecondary },
 
     itemRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
     itemThumb: {
         width: 34,
         height: 34,
         borderRadius: borderRadius.sm,
-        backgroundColor: colors.surface2,
+        backgroundColor: customerColors.surface2,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.sm,
@@ -269,9 +320,9 @@ const styles = StyleSheet.create({
     },
     itemImage: { width: '100%', height: '100%', borderRadius: borderRadius.sm, resizeMode: 'cover' },
     itemInfo: { flex: 1 },
-    itemName: { ...typography.bodySmall, color: colors.text, fontWeight: '600' },
-    itemMeta: { ...typography.caption, color: colors.textSecondary },
-    itemTotal: { ...typography.bodySmall, color: colors.text, fontWeight: '700' },
+    itemName: { ...typography.bodySmall, color: customerColors.text, fontWeight: '600' },
+    itemMeta: { ...typography.caption, color: customerColors.textSecondary },
+    itemTotal: { ...typography.bodySmall, color: customerColors.text, fontWeight: '700' },
 
     summaryRow: {
         flexDirection: 'row',
@@ -279,16 +330,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: spacing.sm,
     },
-    summaryLabel: { ...typography.bodySmall, color: colors.textSecondary },
-    summaryValue: { ...typography.bodySmall, color: colors.text },
+    summaryLabel: { ...typography.bodySmall, color: customerColors.textSecondary },
+    summaryValue: { ...typography.bodySmall, color: customerColors.text },
     totalRow: {
         borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopColor: customerColors.border,
         paddingTop: spacing.sm,
         marginTop: spacing.xs,
     },
-    totalLabel: { ...typography.body, color: colors.text, fontWeight: '700' },
-    totalValue: { ...typography.body, color: colors.primary, fontWeight: '700' },
+    totalLabel: { ...typography.body, color: customerColors.text, fontWeight: '700' },
+    totalValue: { ...typography.body, color: customerColors.primary, fontWeight: '700' },
 
     cancelBtn: {
         flexDirection: 'row',
@@ -298,8 +349,8 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.md,
         borderRadius: borderRadius.lg,
         borderWidth: 1.5,
-        borderColor: colors.error,
-        backgroundColor: colors.error + '0D',
+        borderColor: customerColors.error,
+        backgroundColor: customerColors.error + '0D',
     },
-    cancelBtnText: { ...typography.body, color: colors.error, fontWeight: '700' },
+    cancelBtnText: { ...typography.body, color: customerColors.error, fontWeight: '700' },
 });

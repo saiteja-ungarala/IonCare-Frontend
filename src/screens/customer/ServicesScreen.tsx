@@ -175,9 +175,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        letterSpacing: -0.2,
+        ...typography.headerTitle,
         color: '#FFFFFF',
         marginBottom: spacing.xs,
     },

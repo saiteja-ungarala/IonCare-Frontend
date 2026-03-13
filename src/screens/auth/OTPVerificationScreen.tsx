@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { RootStackParamList } from '../../models/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,7 +44,7 @@ export const OTPVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
     const activeThemeColor =
         selectedRole === 'agent' ? colors.accent :
             selectedRole === 'dealer' ? colors.info :
-                colors.primary;
+                customerColors.primary;
 
     const isAgent = selectedRole === 'agent';
     const isCustomLogin = selectedRole === 'customer' || selectedRole === 'agent' || selectedRole === 'dealer';
@@ -155,7 +156,7 @@ export const OTPVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
                                 style={[styles.backButton, isCustomLogin && styles.glassButton]}
                                 onPress={() => navigation.goBack()}
                             >
-                                <Ionicons name="arrow-back" size={22} color={colors.text} />
+                                <Ionicons name="chevron-back" size={28} color={colors.text} />
                             </TouchableOpacity>
                         </View>
 
@@ -269,13 +270,11 @@ const styles = StyleSheet.create({
         paddingBottom: spacing.lg,
     },
     backButton: {
-        width: 40,
+        width: 32,
         height: 40,
-        borderRadius: 12,
-        backgroundColor: colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
-        ...shadows.sm,
+        marginLeft: -spacing.sm,
     },
     glassButton: {
         backgroundColor: 'rgba(255,255,255,0.3)',

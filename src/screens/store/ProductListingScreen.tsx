@@ -16,6 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, shadows, spacing, storeTheme } from '../../theme/theme';
 import storeService, { StoreProduct } from '../../services/storeService';
 import { useCartStore } from '../../store/cartStore';
@@ -82,6 +83,7 @@ export function ProductListingScreen({ route, navigation }: any) {
     const [addingToCartId, setAddingToCartId] = React.useState<number | null>(null);
     const [failedImages, setFailedImages] = React.useState<Record<number, boolean>>({});
     const { addProductToCart, totalItems, fetchCart } = useCartStore();
+    const insets = useSafeAreaInsets();
 
     const loadProducts = React.useCallback(async () => {
         if (!categoryId || !brandId) return;
@@ -249,44 +251,47 @@ export function ProductListingScreen({ route, navigation }: any) {
                 colors={themeDark && themeColor ? [themeDark, themeColor] : ['#0D7C5A', '#15A67A']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.header}
+                style={[styles.header, { paddingTop: insets.top + spacing.xs }]}
             >
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-                <View style={styles.titleWrap}>
-                    <Text style={styles.headerTitle} numberOfLines={1}>{brandName || 'Products'}</Text>
-                    <Text style={styles.headerSubtitle}>Browse products & offers</Text>
+                <View style={styles.headerTopRow}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle} numberOfLines={1}>{brandName || 'Products'}</Text>
+                        <Text style={styles.headerSubtitle}>Browse products & offers</Text>
+                    </View>
+                    <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
+                        <Ionicons name="cart-outline" size={24} color="#FFFFFF" />
+                        {totalItems > 0 ? (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
+                            </View>
+                        ) : null}
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-                    <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
-                    {totalItems > 0 ? (
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
-                        </View>
-                    ) : null}
-                </TouchableOpacity>
-            </LinearGradient>
 
-            <View style={styles.controlsPanel}>
-                <View style={styles.searchWrap}>
-                    <Ionicons name="search" size={18} color={storeTheme.textSecondary} />
+                {/* Integrated Translucent Search Bar */}
+                <View style={styles.integratedSearchBar}>
+                    <Ionicons name="search" size={18} color="rgba(255,255,255,0.8)" />
                     <TextInput
                         value={search}
                         onChangeText={setSearch}
                         placeholder="Search products..."
-                        placeholderTextColor={storeTheme.textSecondary}
-                        style={styles.searchInput}
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        style={styles.searchInputCustom}
                         returnKeyType="search"
                         onSubmitEditing={() => setAppliedSearch(search)}
                     />
                     {search ? (
                         <TouchableOpacity onPress={() => { setSearch(''); setAppliedSearch(''); }}>
-                            <Ionicons name="close-circle" size={18} color={storeTheme.textSecondary} />
+                            <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.8)" />
                         </TouchableOpacity>
                     ) : null}
                 </View>
+            </LinearGradient>
 
+            <View style={styles.controlsPanel}>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -358,22 +363,41 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.xxl,
-        paddingBottom: spacing.xl,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        flexDirection: 'row',
-        alignItems: 'center',
+        paddingBottom: spacing.lg,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
         overflow: 'hidden',
     },
-    backButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
+    headerTopRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-        marginRight: spacing.sm,
+        justifyContent: 'space-between',
+        marginBottom: spacing.sm,
+    },
+    integratedSearchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: 24,
+        paddingHorizontal: spacing.md,
+        height: 48,
+        marginTop: spacing.xs,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.25)',
+    },
+    searchInputCustom: {
+        flex: 1,
+        fontSize: 14,
+        color: '#FFFFFF',
+        marginLeft: spacing.sm,
+    },
+    backButton: {
+        padding: spacing.xs,
+        marginLeft: -spacing.xs,
+    },
+    headerTitleContainer: {
+        flex: 1,
+        marginHorizontal: spacing.sm,
     },
     titleWrap: {
         flex: 1,
@@ -420,8 +444,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     controlsPanel: {
-        marginHorizontal: spacing.lg,
-        marginBottom: spacing.md,
+        paddingVertical: spacing.md,
+        backgroundColor: '#FFFFFF',
+        ...shadows.sm,
     },
     searchWrap: {
         flexDirection: 'row',

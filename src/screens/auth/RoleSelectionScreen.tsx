@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { UserRole } from '../../models/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -88,7 +89,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
                 {/* Header Section */}
                 <FadeInView delay={100} duration={600} direction="down" distance={20} style={styles.header}>
                     <View style={styles.logoBadge}>
-                        <Ionicons name="water" size={32} color={colors.primary} />
+                        <Ionicons name="water" size={32} color={customerColors.primary} />
                     </View>
                     <Text style={styles.appName}>AquaCare</Text>
                     <Text style={styles.tagline}>Select your role to continue</Text>
@@ -101,7 +102,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
                         title="Customer"
                         description="Book services & buy products"
                         icon="person"
-                        color={colors.primary}
+                        color={customerColors.primary}
                         onPress={() => handleRoleSelect('customer')}
                         delay={300}
                     />

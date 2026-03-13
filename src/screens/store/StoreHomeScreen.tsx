@@ -8,11 +8,13 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, shadows, spacing, storeTheme } from '../../theme/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { borderRadius, shadows, spacing, storeTheme, typography } from '../../theme/theme';
 import storeService, { StoreCategory } from '../../services/storeService';
 import { useCartStore } from '../../store/cartStore';
 
@@ -87,6 +89,7 @@ export function StoreHomeScreen({ navigation }: any) {
     const [error, setError] = React.useState<string | null>(null);
     const [searchQuery, setSearchQuery] = React.useState('');
     const { totalItems, fetchCart } = useCartStore();
+    const insets = useSafeAreaInsets();
 
     const loadCategories = React.useCallback(async () => {
         setIsLoading(true);
@@ -163,42 +166,46 @@ export function StoreHomeScreen({ navigation }: any) {
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={[storeTheme.primary || '#00B8D9', storeTheme.primaryDark || '#007C91']}
+                colors={['#051937', '#103C6A', '#1E6091']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.header}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
             >
-                <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Our Store</Text>
-                    <Text style={styles.headerSubtitle}>Shop by category</Text>
+                <View style={styles.headerTopRow}>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle} numberOfLines={1}>Our Store</Text>
+                        <Text style={styles.headerSubtitle}>Shop by category</Text>
+                    </View>
+                    <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
+                        <Ionicons name="cart-outline" size={24} color="#FFFFFF" />
+                        {totalItems > 0 ? (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
+                            </View>
+                        ) : null}
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-                    <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
-                    {totalItems > 0 ? (
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
-                        </View>
-                    ) : null}
-                </TouchableOpacity>
-            </LinearGradient>
 
-            <View style={styles.sheet}>
-                <View style={styles.searchWrap}>
-                    <Ionicons name="search" size={17} color={storeTheme.textSecondary} />
+                {/* Integrated Translucent Search Bar */}
+                <View style={styles.integratedSearchBar}>
+                    <Ionicons name="search" size={18} color="rgba(255,255,255,0.8)" />
                     <TextInput
                         value={searchQuery}
                         onChangeText={setSearchQuery}
-                        placeholder="Search products..."
-                        placeholderTextColor={storeTheme.textSecondary}
-                        style={styles.searchInput}
+                        placeholder="Search categories..."
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        style={styles.searchInputCustom}
                         returnKeyType="search"
                     />
                     {searchQuery ? (
                         <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                            <Ionicons name="close-circle" size={18} color={storeTheme.textSecondary} />
+                            <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.8)" />
                         </TouchableOpacity>
                     ) : null}
                 </View>
+            </LinearGradient>
+
+            <View style={styles.mainContainer}>
 
                 {isLoading ? (
                     <View style={styles.centered}>
@@ -245,23 +252,17 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.xxl,
-        paddingBottom: spacing.xl,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        flexDirection: 'row',
-        alignItems: 'center',
+        paddingBottom: 40,
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
         overflow: 'hidden',
     },
-    headerContent: {
+    headerTitleContainer: {
         flex: 1,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        letterSpacing: -0.2,
+        ...typography.headerTitle,
         color: '#FFFFFF',
-        marginBottom: spacing.xs,
     },
     headerSubtitle: {
         fontSize: 14,
@@ -296,21 +297,33 @@ const styles = StyleSheet.create({
         fontSize: 9,
         fontWeight: '700',
     },
-    sheet: {
+    mainContainer: {
         flex: 1,
         backgroundColor: '#F8FBFC',
         paddingTop: spacing.lg,
     },
-    searchWrap: {
-        marginHorizontal: spacing.lg,
+    headerTopRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EEF4F7',
-        borderRadius: borderRadius.lg,
-        borderWidth: 1,
-        borderColor: '#D8E4EA',
+        justifyContent: 'space-between',
+        marginBottom: spacing.sm,
+    },
+    integratedSearchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: 24,
         paddingHorizontal: spacing.md,
-        minHeight: 48,
+        height: 48,
+        marginTop: spacing.xs,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.25)',
+    },
+    searchInputCustom: {
+        flex: 1,
+        fontSize: 14,
+        color: '#FFFFFF',
+        marginLeft: spacing.sm,
     },
     searchInput: {
         flex: 1,

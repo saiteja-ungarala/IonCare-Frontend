@@ -7,12 +7,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { Button } from '../../components';
 import { useCartStore } from '../../store';
 import { BackendCartItem } from '../../store/cartStore';
 import ordersService from '../../services/ordersService';
 import { profileService } from '../../services/profileService';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type CartScreenProps = { navigation: NativeStackNavigationProp<any> };
 
@@ -48,6 +50,7 @@ const normalizeCartItem = (item: BackendCartItem): NormalizedCartItem => ({
 });
 
 export const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
+    const insets = useSafeAreaInsets();
     const { items, totalAmount, isLoading, fetchCart, updateCartItemQty, removeCartItem, clearLocalCart } = useCartStore();
 
     // Local State for Checkout
@@ -210,59 +213,86 @@ export const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
     // Loading state
     if (isLoading && cartItems.length === 0) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Cart</Text>
-                </View>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+                >
+                    <Ionicons name="cart" size={100} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>Shopping Cart</Text>
+                            <Text style={styles.headerSubtitle}>Items ready for checkout</Text>
+                        </View>
+                    </View>
+                </LinearGradient>
                 <View style={styles.emptyContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={styles.loadingText}>Loading cart...</Text>
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     // Empty cart
     if (cartItems.length === 0) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Cart</Text>
-                </View>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+                >
+                    <Ionicons name="cart" size={100} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>Shopping Cart</Text>
+                            <Text style={styles.headerSubtitle}>Your cart is currently empty</Text>
+                        </View>
+                    </View>
+                </LinearGradient>
                 <View style={styles.emptyContainer}>
                     <Ionicons name="cart-outline" size={80} color={colors.textLight} />
                     <Text style={styles.emptyTitle}>Your cart is empty</Text>
-                    <Button title="Browse Products" onPress={() => navigation.navigate('StoreHome')} style={{ marginTop: 16 }} />
+                    <Button title="Browse Products" onPress={() => navigation.navigate('CustomerTabs', { screen: 'Store' })} style={{ marginTop: 16, backgroundColor: customerColors.primaryDark }} />
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="cart" size={100} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <View style={styles.headerLeft}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>Shopping Cart</Text>
+                            <Text style={styles.headerSubtitle}>{cartItems.length} items ready for checkout</Text>
+                        </View>
+                    </View>
+                    <TouchableOpacity onPress={() => { clearLocalCart(); fetchCart(); }} style={styles.refreshButton}>
+                        <Ionicons name="refresh" size={20} color={colors.textOnPrimary} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Cart ({cartItems.length})</Text>
                 </View>
-                <TouchableOpacity onPress={() => { clearLocalCart(); fetchCart(); }}>
-                    <Text style={styles.clearText}>Refresh</Text>
-                </TouchableOpacity>
-            </View>
+            </LinearGradient>
 
             <ScrollView style={styles.scrollView}>
                 {cartItems.map((item) => (
                     <View key={String(item.cartItemId)} style={styles.cartItem}>
                         <View style={styles.itemImage}>
-                            <Ionicons name={getIcon(item.itemType)} size={40} color={colors.primary} />
+                            <Ionicons name={getIcon(item.itemType)} size={40} color={customerColors.primaryDark} />
                         </View>
                         <View style={styles.itemContent}>
                             <Text style={styles.itemName} numberOfLines={2}>{item.title}</Text>
@@ -278,14 +308,14 @@ export const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
                                     style={styles.quantityButton}
                                     onPress={() => handleUpdateQty(item.cartItemId, item.qty - 1)}
                                 >
-                                    <Ionicons name="remove" size={18} color={colors.primary} />
+                                    <Ionicons name="remove" size={18} color={customerColors.primaryDark} />
                                 </TouchableOpacity>
                                 <Text style={styles.quantityText}>{item.qty}</Text>
                                 <TouchableOpacity
                                     style={styles.quantityButton}
                                     onPress={() => handleUpdateQty(item.cartItemId, item.qty + 1)}
                                 >
-                                    <Ionicons name="add" size={18} color={colors.primary} />
+                                    <Ionicons name="add" size={18} color={customerColors.primaryDark} />
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -313,7 +343,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
 
             <View style={styles.bottomBar}>
                 <View><Text style={styles.bottomLabel}>Total</Text><Text style={styles.bottomPrice}>₹{finalTotal.toLocaleString()}</Text></View>
-                <Button title="Checkout" onPress={handleCheckoutButton} style={{ paddingHorizontal: 32 }} />
+                <Button title="Checkout" onPress={handleCheckoutButton} style={{ paddingHorizontal: 32, backgroundColor: customerColors.primaryDark }} />
             </View>
 
             {/* Checkout Confirmation Modal */}
@@ -393,27 +423,74 @@ export const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
                     </View>
                 )
             }
-        </SafeAreaView >
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, ...shadows.sm },
-    headerLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    backButton: { marginRight: spacing.sm },
-    headerTitle: { ...typography.h3, color: colors.text },
+    header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -10,
+        bottom: -10,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.headerTitle,
+        color: colors.textOnPrimary,
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
+    refreshButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     clearText: { ...typography.bodySmall, color: colors.primary },
     scrollView: { flex: 1, padding: spacing.md },
     cartItem: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.md, ...shadows.sm, alignItems: 'center' },
     itemImage: { width: 70, height: 70, borderRadius: borderRadius.md, backgroundColor: colors.surfaceSecondary, alignItems: 'center', justifyContent: 'center' },
     itemContent: { flex: 1, marginLeft: spacing.md },
     itemName: { ...typography.body, fontWeight: '600', color: colors.text },
-    itemPrice: { ...typography.body, color: colors.primary, fontWeight: '700' },
+    itemPrice: { ...typography.body, color: customerColors.primaryDark, fontWeight: '700' },
     bookingInfo: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
     bookingText: { ...typography.caption, color: colors.textSecondary },
     quantityRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm, gap: spacing.sm },
-    quantityButton: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+    quantityButton: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: customerColors.primaryDark, alignItems: 'center', justifyContent: 'center' },
     quantityText: { ...typography.body, fontWeight: '600', minWidth: 24, textAlign: 'center' },
     summaryCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.xl, ...shadows.sm },
     summaryTitle: { ...typography.h3, color: colors.text, marginBottom: spacing.md },
@@ -421,7 +498,7 @@ const styles = StyleSheet.create({
     summaryLabel: { color: colors.textSecondary },
     totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md, marginTop: spacing.sm },
     totalLabel: { fontWeight: '600' },
-    totalValue: { ...typography.h3, color: colors.primary, fontWeight: '700' },
+    totalValue: { ...typography.h3, color: customerColors.primaryDark, fontWeight: '700' },
     bottomBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
     bottomLabel: { ...typography.caption, color: colors.textSecondary },
     bottomPrice: { ...typography.h3, fontWeight: '700' },
@@ -438,7 +515,7 @@ const styles = StyleSheet.create({
     referralSection: { width: '100%', marginBottom: spacing.lg },
     referralHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs },
     referralLabel: { ...typography.bodySmall, color: colors.text, fontWeight: '600' },
-    referralClearText: { ...typography.caption, color: colors.primary, fontWeight: '600' },
+    referralClearText: { ...typography.caption, color: customerColors.primaryDark, fontWeight: '600' },
     referralInput: {
         borderWidth: 1,
         borderColor: colors.border,
@@ -457,7 +534,7 @@ const styles = StyleSheet.create({
     modalActions: { flexDirection: 'row', gap: spacing.md, width: '100%' },
     modalBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
     modalBtnCancel: { backgroundColor: colors.surfaceSecondary },
-    modalBtnConfirm: { backgroundColor: colors.primary },
+    modalBtnConfirm: { backgroundColor: customerColors.primaryDark },
     modalBtnTextCancel: { ...typography.body, fontWeight: '600', color: colors.text },
     modalBtnTextConfirm: { ...typography.body, fontWeight: '600', color: colors.textOnPrimary },
     // Success Overlay

@@ -227,4 +227,33 @@ export const authService = {
             throw getApiErrorMessage(error);
         }
     },
+
+    // Refresh access token using refresh token
+    async refreshToken(): Promise<string | null> {
+        try {
+            const refreshToken = await storage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+            if (!refreshToken) return null;
+
+            console.log('[Auth] Refreshing token...');
+            const response = await api.post('/auth/refresh', { refreshToken });
+            const { data } = response.data;
+            
+            const newAccessToken = data.accessToken;
+            const newRefreshToken = data.refreshToken;
+
+            if (newAccessToken) {
+                await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, newAccessToken);
+                if (newRefreshToken) {
+                    await storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+                }
+                console.log('[Auth] Token refreshed successfully');
+                return newAccessToken;
+            }
+            return null;
+        } catch (error) {
+            console.error('[Auth] Token refresh failed:', error);
+            // Don't clear storage here, the api interceptor will handle it if retry fails
+            return null;
+        }
+    },
 };

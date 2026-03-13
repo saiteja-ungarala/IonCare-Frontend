@@ -1,11 +1,10 @@
-// Axios API configuration
-
 import axios from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { STORAGE_KEYS } from '../config/constants';
+import { API_BASE_URL, STORAGE_KEYS } from '../config/constants';
+import { authService } from './authService';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.9:3000/api';
+const BASE_URL = API_BASE_URL;
 axios.defaults.timeout = 10000;
 
 // Log API base URL at startup
@@ -55,7 +54,6 @@ api.interceptors.request.use(
         const token = await getStoredToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
-            console.log('[API] Token attached:', token ? 'Yes' : 'No');
         }
         return config;
     },
@@ -64,18 +62,34 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor for error handling + GET retry on network error
+// Response interceptor for error handling + Token Refresh + Network Error retry
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
 
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response?.status === 401) {
-            // Token expired or invalid - clear storage and redirect to login
+        const originalRequest = error.config;
+        
+        // Handle 401 Unauthorized - Attempt Token Refresh
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            console.log('[API] 401 received - attempting token refresh');
+            
+            try {
+                const newToken = await authService.refreshToken();
+                if (newToken) {
+                    console.log('[API] Refresh successful - retrying request');
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    return api(originalRequest);
+                }
+            } catch (refreshError) {
+                console.error('[API] Token refresh interceptor error:', refreshError);
+            }
+            
+            // If refresh fails or no new token, clear and reject
             await clearStoredTokens();
-            console.log('[API] 401 received - tokens cleared');
-            // Navigation to login will be handled by auth state change
+            console.log('[API] Refresh failed or unavailable - session cleared');
             return Promise.reject(error);
         }
 

@@ -6,13 +6,15 @@ import {
     ImageSourcePropType,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, shadows, spacing, storeTheme } from '../../theme/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { borderRadius, shadows, spacing, storeTheme, typography } from '../../theme/theme';
 import storeService, { StoreBrand } from '../../services/storeService';
 import { useCartStore } from '../../store/cartStore';
 import { resolveStoreMediaSource } from '../../utils/productImage';
@@ -82,7 +84,9 @@ export function StoreBrandsScreen({ route, navigation }: any) {
     const [error, setError] = React.useState<string | null>(null);
     const [failedLogos, setFailedLogos] = React.useState<Record<number, boolean>>({});
     const [failedBanners, setFailedBanners] = React.useState<Record<number, boolean>>({});
+    const [searchQuery, setSearchQuery] = React.useState('');
     const { totalItems, fetchCart } = useCartStore();
+    const insets = useSafeAreaInsets();
 
     const loadBrands = React.useCallback(async () => {
         if (!categoryId) return;
@@ -98,6 +102,14 @@ export function StoreBrandsScreen({ route, navigation }: any) {
             setIsLoading(false);
         }
     }, [categoryId]);
+
+    const filteredBrands = React.useMemo(() => {
+        const normalizedQuery = searchQuery.trim().toLowerCase();
+        if (!normalizedQuery) return brands;
+        return brands.filter(brand =>
+            brand.name.toLowerCase().includes(normalizedQuery)
+        );
+    }, [brands, searchQuery]);
 
     React.useEffect(() => {
         loadBrands();
@@ -179,8 +191,8 @@ export function StoreBrandsScreen({ route, navigation }: any) {
                                     onError={() => setFailedBanners(prev => ({ ...prev, [item.id]: true }))}
                                 />
                             ) : (
-                                <View style={[styles.bannerThumbFallback, { backgroundColor: palette.logoBg }]}>
-                                    <Ionicons name="pricetag-outline" size={14} color={palette.stripText} />
+                                <View style={[styles.bannerPlaceholder, { borderColor: `${palette.chipBg}22` }]}>
+                                    <Ionicons name="images-outline" size={14} color={`${palette.chipBg}66`} />
                                 </View>
                             )}
                             <Ionicons name="chevron-forward" size={17} color={storeTheme.textSecondary} />
@@ -194,29 +206,49 @@ export function StoreBrandsScreen({ route, navigation }: any) {
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={['#5B32CA', '#7E4FE0']}
+                colors={['#064E3B', '#065F46', '#059669']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.header}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
             >
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-                <View style={styles.titleWrap}>
-                    <Text style={styles.headerTitle} numberOfLines={1}>{categoryName || 'Brands'}</Text>
-                    <Text style={styles.headerSubtitle}>Select a brand to browse products</Text>
+                <View style={styles.headerTopRow}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle} numberOfLines={1}>{categoryName || 'Brands'}</Text>
+                        <Text style={styles.headerSubtitle}>Choose a brand to browse</Text>
+                    </View>
+                    <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
+                        <Ionicons name="cart-outline" size={24} color="#FFFFFF" />
+                        {totalItems > 0 ? (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
+                            </View>
+                        ) : null}
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-                    <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
-                    {totalItems > 0 ? (
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
-                        </View>
+
+                {/* Integrated Translucent Search Bar */}
+                <View style={styles.integratedSearchBar}>
+                    <Ionicons name="search" size={18} color="rgba(255,255,255,0.8)" />
+                    <TextInput
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        placeholder="Search brands..."
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        style={styles.searchInputCustom}
+                        returnKeyType="search"
+                    />
+                    {searchQuery ? (
+                        <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                            <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.8)" />
+                        </TouchableOpacity>
                     ) : null}
-                </TouchableOpacity>
+                </View>
             </LinearGradient>
 
-            <View style={styles.sheet}>
+            <View style={styles.mainContainer}>
                 {isLoading ? (
                     <View style={styles.centered}>
                         <ActivityIndicator size="large" color={storeTheme.primary} />
@@ -235,15 +267,15 @@ export function StoreBrandsScreen({ route, navigation }: any) {
 
                 {!isLoading && !error ? (
                     <FlatList
-                        data={brands}
+                        data={filteredBrands}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={renderBrand}
                         contentContainerStyle={styles.listContent}
                         ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
                         ListEmptyComponent={
                             <View style={styles.centered}>
-                                <Ionicons name="ribbon-outline" size={48} color={storeTheme.textSecondary} />
-                                <Text style={styles.emptyText}>No brands available in this category.</Text>
+                                <Ionicons name="business-outline" size={48} color={storeTheme.textSecondary} />
+                                <Text style={styles.emptyText}>No brands found matching your search.</Text>
                             </View>
                         }
                     />
@@ -260,33 +292,49 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.xxl,
-        paddingBottom: spacing.xl,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        flexDirection: 'row',
-        alignItems: 'center',
+        paddingBottom: 40,
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
         overflow: 'hidden',
     },
+    headerTopRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: spacing.sm,
+    },
+    integratedSearchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: 24,
+        paddingHorizontal: spacing.md,
+        height: 48,
+        marginTop: spacing.xs,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.25)',
+    },
+    searchInputCustom: {
+        flex: 1,
+        fontSize: 14,
+        color: '#FFFFFF',
+        marginLeft: spacing.sm,
+    },
     backButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
+        width: 32,
+        height: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-        marginRight: spacing.sm,
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
     },
-    titleWrap: {
+    headerTitleContainer: {
         flex: 1,
         marginRight: spacing.sm,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        letterSpacing: -0.2,
+        ...typography.headerTitle,
         color: '#FFFFFF',
-        marginBottom: spacing.xs,
     },
     headerSubtitle: {
         fontSize: 14,
@@ -321,8 +369,9 @@ const styles = StyleSheet.create({
         fontSize: 9,
         fontWeight: '700',
     },
-    sheet: {
+    mainContainer: {
         flex: 1,
+        backgroundColor: '#F8FBFC',
     },
     listContent: {
         paddingHorizontal: spacing.lg,
@@ -386,6 +435,17 @@ const styles = StyleSheet.create({
     logo: {
         width: '78%',
         height: '78%',
+    },
+    bannerPlaceholder: {
+        width: 48,
+        height: 48,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#F3F4F6',
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#E5E7EB',
     },
     logoFallback: {
         fontSize: 18,

@@ -16,19 +16,21 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { paymentService } from '../../services/paymentService';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // react-native-razorpay doesn't ship types; require to avoid TS errors
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const RazorpayCheckout = require('react-native-razorpay').default ?? require('react-native-razorpay');
 
-const TEAL = '#14B8A6';
+const TEAL = customerColors.primary;
+const TEAL_DARK = customerColors.primaryDark;
 
 type PaymentScreenProps = RootStackScreenProps<'PaymentScreen'>;
 
 type PayState = 'idle' | 'creating_order' | 'processing' | 'verifying' | 'success' | 'error';
 
 export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route }) => {
+    const insets = useSafeAreaInsets();
     const { amount, entityType, entityId, description } = route.params;
     const user = useAuthStore((s) => s.user);
 
@@ -137,25 +139,35 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
 
     // ── Main view ─────────────────────────────────────────────────
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                    disabled={isBusy}
-                >
-                    <Ionicons name="arrow-back" size={22} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Complete Payment</Text>
-                <View style={{ width: 44 }} />
-            </View>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="card" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}
+                        disabled={isBusy}
+                    >
+                        <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>Complete Payment</Text>
+                        <Text style={styles.headerSubtitle}>Secure SSL Encrypted Transaction</Text>
+                    </View>
+                </View>
+            </LinearGradient>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Amount Hero Card */}
                 <View style={styles.amountHeroCard}>
                     <LinearGradient
-                        colors={['#0D9488', '#14B8A6']}
+                        colors={[customerColors.primary, customerColors.primaryDark]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.amountHeroGradient}
@@ -163,7 +175,7 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
                         <Text style={styles.amountHeroLabel}>Total Amount</Text>
                         <Text style={styles.amountHeroValue}>₹{amount.toLocaleString('en-IN')}</Text>
                         <View style={styles.amountHeroBadge}>
-                            <Ionicons name="shield-checkmark" size={14} color={TEAL} />
+                            <Ionicons name="shield-checkmark" size={14} color={customerColors.primaryDark} />
                             <Text style={styles.amountHeroBadgeText}>Secured by Razorpay</Text>
                         </View>
                     </LinearGradient>
@@ -250,7 +262,7 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
                     activeOpacity={0.85}
                 >
                     <LinearGradient
-                        colors={['#0D9488', '#14B8A6']}
+                        colors={[customerColors.primary, customerColors.primaryDark]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={styles.payButtonGradient}
@@ -305,7 +317,7 @@ export const PaymentScreen: React.FC<PaymentScreenProps> = ({ navigation, route 
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 };
 
@@ -313,30 +325,41 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F5F8FA' },
 
     header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md + 2,
-        backgroundColor: '#FFFFFF',
-        shadowColor: 'rgba(0,0,0,0.05)',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 6,
-        elevation: 2,
     },
     backButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
-        backgroundColor: '#F3F4F6',
+        width: 32,
+        height: 40,
         alignItems: 'center',
         justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: colors.text,
+        ...typography.headerTitle,
+        color: colors.textOnPrimary,
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
     },
 
     scrollView: { flex: 1 },
@@ -384,7 +407,7 @@ const styles = StyleSheet.create({
     amountHeroBadgeText: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#0D9488',
+        color: customerColors.primaryDark,
     },
 
     // Details Card

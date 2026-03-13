@@ -11,12 +11,14 @@ import {
     Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { Button } from '../../components';
 import { useCartStore } from '../../store/cartStore';
 import storeService, { StoreProduct } from '../../services/storeService';
 import { resolveProductImageSource } from '../../utils/productImage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { customerColors } from '../../theme/customerTheme';
 
 // Icon mapping for product categories
 const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -87,38 +89,46 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
         }
     };
 
+    const insets = useSafeAreaInsets();
+
     // Loading state
     if (isLoading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    style={[styles.header, { paddingTop: insets.top + spacing.sm }]}
+                >
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
+                        <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
                     </TouchableOpacity>
-                </View>
+                </LinearGradient>
                 <View style={styles.centered}>
-                    <ActivityIndicator size="large" color={colors.primary} />
+                    <ActivityIndicator size="large" color={customerColors.primary} />
                     <Text style={styles.loadingText}>Loading product...</Text>
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     // Error state
     if (error || !product) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    style={[styles.header, { paddingTop: insets.top + spacing.sm }]}
+                >
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
+                        <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
                     </TouchableOpacity>
-                </View>
+                </LinearGradient>
                 <View style={styles.centered}>
-                    <Ionicons name="alert-circle-outline" size={64} color={colors.textSecondary} />
+                    <Ionicons name="alert-circle-outline" size={64} color={customerColors.textSecondary} />
                     <Text style={styles.errorText}>{error || 'Product not found'}</Text>
                     <Button title="Go Back" onPress={() => navigation.goBack()} style={{ marginTop: spacing.md }} />
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
@@ -131,26 +141,33 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
     const imageSource = resolveProductImageSource(product.imageUrl);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Header */}
-                <View style={styles.header}>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.sm }]}
+            >
+                <View style={styles.headerContent}>
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
+                        <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
                     </TouchableOpacity>
+                    <Text style={styles.headerTitle} numberOfLines={1}>Product Details</Text>
                     <TouchableOpacity
                         style={styles.cartButton}
                         onPress={() => navigation.navigate('Cart')}
                     >
-                        <Ionicons name="cart-outline" size={24} color={colors.text} />
+                        <Ionicons name="cart-outline" size={26} color={customerColors.textOnPrimary} />
                         {totalItems > 0 && (
-                            <View style={styles.badge}>
+                            <View style={[styles.badge, { backgroundColor: '#FF5252' }]}>
                                 <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>
                             </View>
                         )}
                     </TouchableOpacity>
                 </View>
+            </LinearGradient>
 
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* Product Image */}
                 <View style={styles.imageContainer}>
                     {discount > 0 && (
@@ -161,7 +178,7 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                     {imageSource ? (
                         <Image source={imageSource} style={styles.productImage} resizeMode="contain" />
                     ) : (
-                        <Ionicons name={getIcon()} size={120} color={colors.primary} />
+                        <Ionicons name={getIcon()} size={120} color={customerColors.primary} />
                     )}
                 </View>
 
@@ -172,7 +189,7 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                     {/* Category & Stock */}
                     <View style={styles.ratingRow}>
                         <View style={styles.categoryChip}>
-                            <Ionicons name={getIcon()} size={14} color={colors.primary} />
+                            <Ionicons name={getIcon()} size={14} color={customerColors.primary} />
                             <Text style={styles.categoryText}>{product.category?.name || 'Product'}</Text>
                         </View>
                         {inStock ? (
@@ -199,7 +216,7 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
 
                     {/* Free Installation Banner */}
                     <View style={styles.offerBanner}>
-                        <Ionicons name="gift" size={24} color={colors.success} />
+                        <Ionicons name="gift" size={24} color={customerColors.success} />
                         <View style={styles.offerContent}>
                             <Text style={styles.offerTitle}>Free Installation</Text>
                             <Text style={styles.offerDesc}>Professional installation by our experts</Text>
@@ -228,15 +245,15 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                     {/* Delivery Info */}
                     <View style={styles.deliveryCard}>
                         <View style={styles.deliveryRow}>
-                            <Ionicons name="location" size={20} color={colors.primary} />
+                            <Ionicons name="location" size={20} color={customerColors.primary} />
                             <Text style={styles.deliveryText}>Delivery available to your location</Text>
                         </View>
                         <View style={styles.deliveryRow}>
-                            <Ionicons name="time" size={20} color={colors.primary} />
+                            <Ionicons name="time" size={20} color={customerColors.primary} />
                             <Text style={styles.deliveryText}>Estimated delivery in 3-5 days</Text>
                         </View>
                         <View style={styles.deliveryRow}>
-                            <Ionicons name="reload" size={20} color={colors.primary} />
+                            <Ionicons name="reload" size={20} color={customerColors.primary} />
                             <Text style={styles.deliveryText}>7-day return policy</Text>
                         </View>
                     </View>
@@ -261,14 +278,14 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                     />
                 </View>
             )}
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: customerColors.background,
     },
     centered: {
         flex: 1,
@@ -278,43 +295,52 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         ...typography.body,
-        color: colors.textSecondary,
+        color: customerColors.textSecondary,
         marginTop: spacing.md,
     },
     errorText: {
         ...typography.body,
-        color: colors.textSecondary,
+        color: customerColors.textSecondary,
         marginTop: spacing.md,
         textAlign: 'center',
     },
     header: {
+        paddingHorizontal: spacing.md,
+        paddingBottom: spacing.lg,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+    },
+    headerContent: {
         flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
-        padding: spacing.md,
+    },
+    headerTitle: {
+        ...typography.h3,
+        color: customerColors.textOnPrimary,
+        flex: 1,
+        textAlign: 'center',
+        marginHorizontal: spacing.sm,
     },
     backButton: {
-        width: 40,
+        width: 32,
         height: 40,
-        borderRadius: 20,
-        backgroundColor: colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
-        ...shadows.sm,
+        marginLeft: -spacing.xs,
     },
     cartButton: {
-        width: 40,
+        width: 32,
         height: 40,
-        borderRadius: 20,
-        backgroundColor: colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
-        ...shadows.sm,
+        marginRight: -spacing.xs,
     },
     badge: {
         position: 'absolute',
         top: -4,
         right: -4,
-        backgroundColor: colors.error,
+        backgroundColor: customerColors.error,
         borderRadius: 10,
         minWidth: 18,
         height: 18,
@@ -329,7 +355,7 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         height: 250,
-        backgroundColor: colors.surfaceSecondary,
+        backgroundColor: customerColors.surfaceSecondary,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
@@ -343,7 +369,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: spacing.md,
         left: spacing.md,
-        backgroundColor: colors.error,
+        backgroundColor: customerColors.error,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.xs,
         borderRadius: borderRadius.sm,
@@ -351,14 +377,14 @@ const styles = StyleSheet.create({
     discountText: {
         ...typography.bodySmall,
         fontWeight: '700',
-        color: colors.textOnPrimary,
+        color: customerColors.textOnPrimary,
     },
     content: {
         padding: spacing.md,
     },
     productName: {
         ...typography.h2,
-        color: colors.text,
+        color: customerColors.text,
         marginBottom: spacing.sm,
     },
     ratingRow: {
@@ -370,7 +396,7 @@ const styles = StyleSheet.create({
     categoryChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.primary + '15',
+        backgroundColor: customerColors.primary + '15',
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xs,
         borderRadius: borderRadius.full,
@@ -378,11 +404,11 @@ const styles = StyleSheet.create({
     },
     categoryText: {
         ...typography.caption,
-        color: colors.primary,
+        color: customerColors.primary,
         fontWeight: '600',
     },
     stockBadge: {
-        backgroundColor: colors.success + '20',
+        backgroundColor: customerColors.success + '20',
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xs,
         borderRadius: borderRadius.sm,
@@ -390,13 +416,13 @@ const styles = StyleSheet.create({
     stockText: {
         ...typography.caption,
         fontWeight: '600',
-        color: colors.success,
+        color: customerColors.success,
     },
     outOfStock: {
-        backgroundColor: colors.error + '20',
+        backgroundColor: customerColors.error + '20',
     },
     outOfStockText: {
-        color: colors.error,
+        color: customerColors.error,
     },
     priceRow: {
         flexDirection: 'row',
@@ -407,23 +433,23 @@ const styles = StyleSheet.create({
     },
     price: {
         ...typography.h1,
-        color: colors.primary,
+        color: customerColors.primary,
         fontWeight: '700',
     },
     originalPrice: {
         ...typography.h3,
-        color: colors.textSecondary,
+        color: customerColors.textSecondary,
         textDecorationLine: 'line-through',
     },
     saveText: {
         ...typography.bodySmall,
-        color: colors.success,
+        color: customerColors.success,
         fontWeight: '600',
     },
     offerBanner: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.success + '15',
+        backgroundColor: customerColors.success + '15',
         padding: spacing.md,
         borderRadius: borderRadius.md,
         marginBottom: spacing.lg,
@@ -435,23 +461,23 @@ const styles = StyleSheet.create({
     offerTitle: {
         ...typography.body,
         fontWeight: '600',
-        color: colors.success,
+        color: customerColors.success,
     },
     offerDesc: {
         ...typography.caption,
-        color: colors.textSecondary,
+        color: customerColors.textSecondary,
     },
     section: {
         marginBottom: spacing.lg,
     },
     sectionTitle: {
         ...typography.h3,
-        color: colors.text,
+        color: customerColors.text,
         marginBottom: spacing.md,
     },
     description: {
         ...typography.body,
-        color: colors.textSecondary,
+        color: customerColors.textSecondary,
         lineHeight: 24,
     },
     detailRow: {
@@ -459,19 +485,19 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: spacing.sm,
         borderBottomWidth: 1,
-        borderBottomColor: colors.border,
+        borderBottomColor: customerColors.border,
     },
     detailLabel: {
         ...typography.body,
-        color: colors.textSecondary,
+        color: customerColors.textSecondary,
     },
     detailValue: {
         ...typography.body,
-        color: colors.text,
+        color: customerColors.text,
         fontWeight: '600',
     },
     deliveryCard: {
-        backgroundColor: colors.surface,
+        backgroundColor: customerColors.surface,
         padding: spacing.md,
         borderRadius: borderRadius.lg,
         ...shadows.sm,
@@ -484,14 +510,14 @@ const styles = StyleSheet.create({
     },
     deliveryText: {
         ...typography.bodySmall,
-        color: colors.text,
+        color: customerColors.text,
     },
     bottomBar: {
         flexDirection: 'row',
         padding: spacing.md,
-        backgroundColor: colors.surface,
+        backgroundColor: customerColors.surface,
         borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopColor: customerColors.border,
         gap: spacing.md,
     },
     addToCartButton: {

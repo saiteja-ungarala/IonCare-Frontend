@@ -13,7 +13,7 @@ export const PaymentMethodsScreen: React.FC<Props> = ({ navigation }) => (
     <SafeAreaView style={styles.container}>
         <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color={colors.text} />
+                <Ionicons name="chevron-back" size={28} color={colors.text} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Payment Methods</Text>
         </View>
@@ -30,7 +30,14 @@ export const PaymentMethodsScreen: React.FC<Props> = ({ navigation }) => (
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, ...shadows.sm },
-    backButton: { marginRight: spacing.md },
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: -spacing.sm,
+        marginRight: spacing.xs,
+    },
     headerTitle: { ...typography.h2, fontSize: 20, color: colors.text },
     content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl },
     iconWrap: { width: 120, height: 120, borderRadius: 60, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.lg },

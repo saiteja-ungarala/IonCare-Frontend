@@ -16,7 +16,9 @@ import { RootStackScreenProps, Booking, BookingUpdate, BookingUpdateType } from 
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { bookingService } from '../../services/bookingService';
 import { CancelReasonModal } from '../../components/CancelReasonModal';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { customerColors } from '../../theme/customerTheme';
 
 type Props = RootStackScreenProps<'BookingDetail'>;
 
@@ -80,6 +82,7 @@ const formatTimestamp = (ts: string) => {
 };
 
 export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
+    const insets = useSafeAreaInsets();
     const { bookingId } = route.params;
 
     const [booking, setBooking] = useState<Booking | null>(null);
@@ -149,49 +152,79 @@ export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={22} color={colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Booking Detail</Text>
-                    <View style={{ width: 40 }} />
-                </View>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+                >
+                    <Ionicons name="construct" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>Booking Detail</Text>
+                            <Text style={styles.headerSubtitle}>View and track your service status</Text>
+                        </View>
+                    </View>
+                </LinearGradient>
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     if (!booking) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={22} color={colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Booking Detail</Text>
-                    <View style={{ width: 40 }} />
-                </View>
+            <View style={styles.container}>
+                <LinearGradient
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+                >
+                    <Ionicons name="construct" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>Booking Detail</Text>
+                            <Text style={styles.headerSubtitle}>View and track your service status</Text>
+                        </View>
+                    </View>
+                </LinearGradient>
                 <View style={styles.centered}>
                     <Ionicons name="alert-circle-outline" size={56} color={colors.textMuted} />
                     <Text style={styles.emptyText}>Booking not found</Text>
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={22} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Booking #{booking.id}</Text>
-                <View style={{ width: 40 }} />
-            </View>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="construct" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>Booking #{booking.id}</Text>
+                        <Text style={styles.headerSubtitle}>Track your service progress</Text>
+                    </View>
+                </View>
+            </LinearGradient>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -336,7 +369,7 @@ export const BookingDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 };
 
@@ -346,25 +379,42 @@ const styles = StyleSheet.create({
     emptyText: { ...typography.body, color: colors.textMuted, marginTop: spacing.md },
 
     header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-        backgroundColor: colors.surface,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        ...shadows.sm,
     },
-    backBtn: {
-        width: 40,
+    backButton: {
+        width: 32,
         height: 40,
-        borderRadius: 12,
-        backgroundColor: colors.background,
         alignItems: 'center',
         justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
     },
-    headerTitle: { ...typography.h2, color: colors.text },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.headerTitle,
+        color: colors.textOnPrimary,
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
 
     scroll: { padding: spacing.lg, paddingBottom: spacing.xxl },
 

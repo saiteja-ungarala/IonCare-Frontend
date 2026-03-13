@@ -12,10 +12,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, shadows, spacing, typography } from '../../theme/theme';
+import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { OrderListItem } from '../../services/ordersService';
 import { useOrdersStore } from '../../store/ordersStore';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type OrderHistoryScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -69,6 +71,7 @@ const formatDate = (dateStr?: string): string => {
 };
 
 export const OrderHistoryScreen: React.FC<OrderHistoryScreenProps> = ({ navigation, route }) => {
+    const insets = useSafeAreaInsets();
     const { orders, isLoading, fetchOrders } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [activeTab, setActiveTab] = useState<OrderTab>('active');
@@ -148,15 +151,26 @@ export const OrderHistoryScreen: React.FC<OrderHistoryScreenProps> = ({ navigati
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                {route.params?.enableBack && (
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                )}
-                <Text style={styles.headerTitle}>My Orders</Text>
-            </View>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="receipt" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    {route.params?.enableBack && (
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                        </TouchableOpacity>
+                    )}
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>Order History</Text>
+                        <Text style={styles.headerSubtitle}>Track your product purchases</Text>
+                    </View>
+                </View>
+            </LinearGradient>
 
             <View style={styles.tabContainer}>
                 {([
@@ -193,15 +207,50 @@ export const OrderHistoryScreen: React.FC<OrderHistoryScreenProps> = ({ navigati
                     {filteredOrders.map(renderOrderCard)}
                 </ScrollView>
             )}
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
-    header: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, ...shadows.sm },
-    backButton: { marginRight: spacing.md },
-    headerTitle: { ...typography.h3, color: colors.text },
+    header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.h2,
+        color: colors.textOnPrimary,
+        fontWeight: '800',
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
     tabContainer: { flexDirection: 'row', padding: spacing.sm, backgroundColor: colors.surface, marginBottom: 1 },
     tab: { flex: 1, paddingVertical: spacing.sm, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
     activeTab: { borderBottomColor: colors.primary },

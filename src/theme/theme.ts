@@ -1,6 +1,8 @@
 // Theme configuration for AquaCare (Vibrant Aqua + Mango)
 // Goals: modern, clean, high-contrast, consistent across Service + Store
 
+import { Platform } from 'react-native';
+
 export type ColorMode = 'light' | 'dark';
 
 const common = {
@@ -192,6 +194,18 @@ export const typography = {
         fontSize: 28,
         fontWeight: '800' as const,
         lineHeight: 34,
+        letterSpacing: -0.5,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: '600' as const,
+        lineHeight: 32,
+        letterSpacing: -0.2,
+        fontFamily: Platform.select({
+            ios: 'System',
+            android: 'sans-serif-medium',
+            default: 'System',
+        }),
     },
     h1: {
         fontSize: 22,

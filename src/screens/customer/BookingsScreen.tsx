@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { colors, spacing, typography, shadows, borderRadius } from '../../theme/theme';
 import { customerColors } from '../../theme/customerTheme';
 import { useBookingsStore } from '../../store';
 import { Booking } from '../../models/types';
@@ -387,7 +387,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
 
                                 <View style={styles.confirmActions}>
                                     <TouchableOpacity style={styles.confirmBackBtn} onPress={() => setCancelStep('select_reason')}>
-                                        <Ionicons name="arrow-back" size={18} color={colors.text} />
+                                        <Ionicons name="chevron-back" size={20} color={colors.text} />
                                         <Text style={styles.confirmBackText}>Go Back</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.confirmCancelBtn} onPress={confirmCancel}>
@@ -421,7 +421,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
                 <View style={styles.headerTopRow}>
                     {route.params?.enableBack && (
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+                            <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
                         </TouchableOpacity>
                     )}
                     <View style={styles.headerContent}>
@@ -498,21 +498,18 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     backButton: {
-        marginRight: spacing.md,
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        width: 32,
+        height: 40,
         alignItems: 'center',
         justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
     },
     headerContent: {
         flex: 1,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        letterSpacing: -0.2,
+        ...typography.headerTitle,
         color: '#FFFFFF',
         marginBottom: spacing.xs,
     },

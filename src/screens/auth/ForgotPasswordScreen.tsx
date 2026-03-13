@@ -110,7 +110,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
                             style={styles.backButton}
                             onPress={() => navigation.goBack()}
                         >
-                            <Ionicons name="arrow-back" size={22} color={colors.text} />
+                            <Ionicons name="chevron-back" size={28} color={colors.text} />
                         </TouchableOpacity>
                     </View>
 
@@ -156,7 +156,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
                                 style={styles.backToLogin}
                                 onPress={() => navigation.goBack()}
                             >
-                                <Ionicons name="arrow-back" size={16} color={colors.primary} />
+                                <Ionicons name="chevron-back" size={20} color={colors.primary} />
                                 <Text style={styles.backToLoginText}>Back to Login</Text>
                             </TouchableOpacity>
                         </View>
@@ -184,13 +184,11 @@ const styles = StyleSheet.create({
         paddingBottom: spacing.lg,
     },
     backButton: {
-        width: 40,
+        width: 32,
         height: 40,
-        borderRadius: 12,
-        backgroundColor: colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
-        ...shadows.sm,
+        marginLeft: -spacing.sm,
     },
     content: {
         flex: 1,

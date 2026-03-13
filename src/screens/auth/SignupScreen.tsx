@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
@@ -43,7 +44,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     } = useAuthStore();
     const isAgent = selectedRole === 'agent';
     const isDealer = selectedRole === 'dealer';
-    const activeAccentColor = isAgent ? colors.accent : isDealer ? colors.info : colors.primary;
+    const activeAccentColor = isAgent ? colors.accent : isDealer ? colors.info : customerColors.primary;
 
     useEffect(() => {
         clearError();
@@ -152,7 +153,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                             style={styles.backButton}
                             onPress={() => navigation.goBack()}
                         >
-                            <Ionicons name="arrow-back" size={22} color={colors.text} />
+                            <Ionicons name="chevron-back" size={28} color={colors.text} />
                         </TouchableOpacity>
                         <View style={styles.headerContent}>
                             <View
@@ -312,13 +313,11 @@ const styles = StyleSheet.create({
         top: spacing.md,
         left: spacing.md,
         zIndex: 1,
-        width: 40,
+        width: 32,
         height: 40,
-        borderRadius: 12,
-        backgroundColor: colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
-        ...shadows.sm,
+        marginLeft: -spacing.sm,
     },
     headerContent: {
         alignItems: 'center',

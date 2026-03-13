@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
@@ -184,7 +185,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         return undefined;
     };
 
-    const activeThemeColor = selectedRole === 'agent' ? colors.accent : (selectedRole === 'dealer' ? colors.info : colors.primary);
+    const activeThemeColor = selectedRole === 'agent' ? colors.accent : (selectedRole === 'dealer' ? colors.info : customerColors.primary);
 
     const wrapperProps = isCustomLogin
         ? { source: getBackgroundImage(), style: styles.backgroundImage, resizeMode: 'cover' as const }
@@ -210,7 +211,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                                 style={[styles.backButton, isCustomLogin && styles.glassButton]}
                                 onPress={() => navigation.goBack()}
                             >
-                                <Ionicons name="arrow-back" size={22} color={colors.text} />
+                                <Ionicons name="chevron-back" size={28} color={colors.text} />
                             </TouchableOpacity>
                         </View>
 

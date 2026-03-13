@@ -9,7 +9,9 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { profileService } from '../../services/profileService';
 import { Address, RootStackParamList } from '../../models/types';
 import { requestLocationPermission, getCurrentLocation, reverseGeocode } from '../../utils/location';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { customerColors } from '../../theme/customerTheme';
 
 type Props = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'AddEditAddress'>;
@@ -97,16 +99,28 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
             Alert.alert('Error', String(msg));
         }
     };
+    const insets = useSafeAreaInsets();
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>{isEdit ? 'Edit Address' : 'Add Address'}</Text>
-                <View style={{ width: 40 }} />
-            </View>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="location" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>{isEdit ? 'Edit Address' : 'Add Address'}</Text>
+                        <Text style={styles.headerSubtitle}>Set your delivery destination</Text>
+                    </View>
+                </View>
+            </LinearGradient>
+
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
                 <ScrollView style={styles.scroll} contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
                     <TouchableOpacity
@@ -115,9 +129,9 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
                         disabled={locating}
                     >
                         {locating ? (
-                            <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />
+                            <ActivityIndicator size="small" color={customerColors.primary} style={{ marginRight: 8 }} />
                         ) : (
-                            <Ionicons name="location-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+                            <Ionicons name="location-outline" size={18} color={customerColors.primary} style={{ marginRight: 8 }} />
                         )}
                         <Text style={styles.locationBtnText}>
                             {locating ? 'Getting location...' : 'Use My Current Location'}
@@ -126,27 +140,27 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
 
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>Label</Text>
-                        <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="e.g. Home, Office" placeholderTextColor={colors.textMuted} />
+                        <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="e.g. Home, Office" placeholderTextColor={customerColors.textMuted} />
                     </View>
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>Address Line 1 *</Text>
-                        <TextInput style={styles.input} value={line1} onChangeText={setLine1} placeholder="Street, building, area" placeholderTextColor={colors.textMuted} />
+                        <TextInput style={styles.input} value={line1} onChangeText={setLine1} placeholder="Street, building, area" placeholderTextColor={customerColors.textMuted} />
                     </View>
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>Address Line 2</Text>
-                        <TextInput style={styles.input} value={line2} onChangeText={setLine2} placeholder="Apartment, floor (optional)" placeholderTextColor={colors.textMuted} />
+                        <TextInput style={styles.input} value={line2} onChangeText={setLine2} placeholder="Apartment, floor (optional)" placeholderTextColor={customerColors.textMuted} />
                     </View>
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>City *</Text>
-                        <TextInput style={styles.input} value={city} onChangeText={setCity} placeholder="City" placeholderTextColor={colors.textMuted} />
+                        <TextInput style={styles.input} value={city} onChangeText={setCity} placeholder="City" placeholderTextColor={customerColors.textMuted} />
                     </View>
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>State *</Text>
-                        <TextInput style={styles.input} value={state} onChangeText={setState} placeholder="State" placeholderTextColor={colors.textMuted} />
+                        <TextInput style={styles.input} value={state} onChangeText={setState} placeholder="State" placeholderTextColor={customerColors.textMuted} />
                     </View>
                     <View style={styles.field}>
                         <Text style={styles.fieldLabel}>Postal Code *</Text>
-                        <TextInput style={styles.input} value={postalCode} onChangeText={setPostalCode} placeholder="Postal code" placeholderTextColor={colors.textMuted} keyboardType="number-pad" />
+                        <TextInput style={styles.input} value={postalCode} onChangeText={setPostalCode} placeholder="Postal code" placeholderTextColor={customerColors.textMuted} keyboardType="number-pad" />
                     </View>
 
                     <View style={styles.switchRow}>
@@ -157,35 +171,71 @@ export const AddEditAddressScreen: React.FC<Props> = ({ navigation, route }) => 
                         <Switch
                             value={isDefault}
                             onValueChange={setIsDefault}
-                            trackColor={{ false: colors.border, true: colors.primary + '60' }}
-                            thumbColor={isDefault ? colors.primary : colors.surface3}
+                            trackColor={{ false: customerColors.border, true: customerColors.primary + '60' }}
+                            thumbColor={isDefault ? customerColors.primary : customerColors.surface3}
                         />
                     </View>
 
                     <TouchableOpacity style={[styles.saveBtn, saving && { opacity: 0.6 }]} onPress={handleSave} disabled={saving}>
-                        {saving ? <ActivityIndicator color={colors.textOnPrimary} /> : <Text style={styles.saveBtnText}>{isEdit ? 'Update Address' : 'Add Address'}</Text>}
+                        {saving ? <ActivityIndicator color={customerColors.textOnPrimary} /> : <Text style={styles.saveBtnText}>{isEdit ? 'Update Address' : 'Add Address'}</Text>}
                     </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: spacing.md, backgroundColor: colors.surface, ...shadows.sm },
-    backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { ...typography.h2, fontSize: 20, color: colors.text },
+    container: { flex: 1, backgroundColor: customerColors.background },
+    header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.headerTitle,
+        color: customerColors.textOnPrimary,
+        fontSize: 22,
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
+
     scroll: { flex: 1 },
     form: { padding: spacing.lg },
     field: { marginBottom: spacing.md },
-    fieldLabel: { ...typography.bodySmall, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.xs },
-    input: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, ...typography.body, color: colors.text, borderWidth: 1, borderColor: colors.border },
-    switchRow: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, borderRadius: borderRadius.md, marginBottom: spacing.lg, borderWidth: 1, borderColor: colors.border },
-    switchLabel: { ...typography.body, fontWeight: '600', color: colors.text },
-    switchSub: { ...typography.caption, color: colors.textSecondary },
-    saveBtn: { backgroundColor: colors.primary, borderRadius: borderRadius.md, padding: spacing.md, alignItems: 'center' },
-    saveBtnText: { ...typography.button, color: colors.textOnPrimary },
-    locationBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.primary, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.lg, backgroundColor: colors.surface },
-    locationBtnText: { ...typography.body, color: colors.primary, fontWeight: '600' },
+    fieldLabel: { ...typography.bodySmall, fontWeight: '600', color: customerColors.textSecondary, marginBottom: spacing.xs },
+    input: { backgroundColor: customerColors.surface, borderRadius: borderRadius.md, padding: spacing.md, ...typography.body, color: customerColors.text, borderWidth: 1, borderColor: customerColors.border },
+    switchRow: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: customerColors.surface, borderRadius: borderRadius.md, marginBottom: spacing.lg, borderWidth: 1, borderColor: customerColors.border },
+    switchLabel: { ...typography.body, fontWeight: '600', color: customerColors.text },
+    switchSub: { ...typography.caption, color: customerColors.textSecondary },
+    saveBtn: { backgroundColor: customerColors.primary, borderRadius: borderRadius.md, padding: spacing.md, alignItems: 'center' },
+    saveBtnText: { ...typography.button, color: customerColors.textOnPrimary },
+    locationBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: customerColors.primary, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.lg, backgroundColor: customerColors.surface },
+    locationBtnText: { ...typography.body, color: customerColors.primary, fontWeight: '600' },
 });

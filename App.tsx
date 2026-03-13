@@ -379,6 +379,7 @@ function CustomerStack() {
             <Stack.Screen name="Search" component={SearchScreen} />
             <Stack.Screen name="ServiceDetails" component={ServiceDetailsScreen} />
             <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+            <Stack.Screen name="Cart" component={CartScreen} />
             <Stack.Screen name="Wallet" component={WalletScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />

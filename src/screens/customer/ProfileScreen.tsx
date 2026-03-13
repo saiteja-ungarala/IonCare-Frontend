@@ -11,7 +11,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '../../theme/
 import { customerColors } from '../../theme/customerTheme';
 import { useAuthStore } from '../../store';
 import { profileService } from '../../services/profileService';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileScreenProps = { navigation: NativeStackNavigationProp<any> };
 
@@ -39,6 +39,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, title, subtitle, onPress, dan
 );
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
+    const insets = useSafeAreaInsets();
     const { user, logout } = useAuthStore();
     const [referralCode, setReferralCode] = useState(user?.referralCode || '');
     const [profileName, setProfileName] = useState(user?.name || 'User');
@@ -95,13 +96,24 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={22} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Profile</Text>
-            </View>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="person" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>My Profile</Text>
+                        <Text style={styles.headerSubtitle}>Manage your account & settings</Text>
+                    </View>
+                </View>
+            </LinearGradient>
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 {/* Profile Card with gradient */}
                 <View style={styles.profileCard}>
@@ -190,37 +202,48 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
                 <Text style={styles.version}>Version 1.0.0</Text>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F5F8FA' },
     header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.md,
-        paddingVertical: spacing.md + 2,
-        backgroundColor: '#FFFFFF',
-        shadowColor: 'rgba(0,0,0,0.05)',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 6,
-        elevation: 2,
     },
     backButton: {
-        marginRight: spacing.md,
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: '#F3F4F6',
+        width: 32,
+        height: 40,
         alignItems: 'center',
         justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: colors.text,
+        ...typography.headerTitle,
+        color: colors.textOnPrimary,
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
     },
     scrollView: { flex: 1, padding: spacing.md },
     profileCard: {
@@ -284,7 +307,7 @@ const styles = StyleSheet.create({
         width: 38,
         height: 38,
         borderRadius: 12,
-        backgroundColor: customerColors.primaryLight,
+        backgroundColor: 'rgba(0, 124, 145, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -301,7 +324,7 @@ const styles = StyleSheet.create({
     },
     referralAccent: {
         height: 3,
-        backgroundColor: '#7FA650',
+        backgroundColor: customerColors.primaryDark,
     },
     referralInner: {
         flexDirection: 'row',
@@ -312,19 +335,19 @@ const styles = StyleSheet.create({
     referralTitle: {
         fontSize: 15,
         fontWeight: '700',
-        color: '#2D5016',
+        color: customerColors.primaryDark,
         marginBottom: 2,
     },
     referralSubtitle: {
         fontSize: 12,
-        color: '#5B7A3D',
+        color: customerColors.textSecondary,
         fontWeight: '500',
     },
     codeContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.xs,
-        backgroundColor: '#F1F8E9',
+        backgroundColor: 'rgba(0, 124, 145, 0.05)',
         paddingVertical: spacing.xs + 2,
         paddingHorizontal: spacing.sm + 2,
         borderRadius: 10,
@@ -332,13 +355,13 @@ const styles = StyleSheet.create({
     referralCode: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#2D5016',
+        color: customerColors.primaryDark,
     },
     copyIcon: {
         width: 28,
         height: 28,
         borderRadius: 8,
-        backgroundColor: 'rgba(127, 166, 80, 0.15)',
+        backgroundColor: 'rgba(0, 124, 145, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -374,7 +397,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 12,
-        backgroundColor: customerColors.primaryLight,
+        backgroundColor: 'rgba(0, 124, 145, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.md,

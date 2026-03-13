@@ -1,24 +1,16 @@
 // Service Details Screen — with Address Selection + Booking
 
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Alert,
-    ActivityIndicator,
-    Modal
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackScreenProps, Address } from '../../models/types';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { Button } from '../../components';
 import { profileService } from '../../services/profileService';
 import { useBookingsStore } from '../../store';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { customerColors } from '../../theme/customerTheme';
 
 type ServiceDetailsScreenProps = RootStackScreenProps<'ServiceDetails'>;
 
@@ -137,28 +129,30 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             setBooking(false);
         }
     };
+    const insets = useSafeAreaInsets();
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <LinearGradient
-                    colors={[colors.gradientStart, colors.gradientEnd]}
-                    style={styles.header}
+                    colors={[customerColors.primary, customerColors.primaryDark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.header, { paddingTop: insets.top + spacing.md }]}
                 >
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
-                    >
-                        <Ionicons name="arrow-back" size={24} color={colors.textOnPrimary} />
-                    </TouchableOpacity>
-
-                    <View style={styles.headerContent}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name={getIcon()} size={48} color={colors.primary} />
+                    <Ionicons name={getIcon()} size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Ionicons name="chevron-back" size={28} color={customerColors.textOnPrimary} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerTitle}>{service.name}</Text>
+                            <Text style={styles.headerSubtitle}>{service.duration} Service</Text>
                         </View>
-                        <Text style={styles.serviceName}>{service.name}</Text>
-                        <Text style={styles.serviceDuration}>{service.duration}</Text>
                     </View>
                 </LinearGradient>
 
@@ -171,7 +165,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                             <Text style={styles.priceValue}>₹{service.price}</Text>
                         </View>
                         <View style={styles.priceNote}>
-                            <Ionicons name="information-circle" size={18} color={colors.info} />
+                            <Ionicons name="information-circle" size={18} color={customerColors.info} />
                             <Text style={styles.priceNoteText}>Includes all materials</Text>
                         </View>
                     </View>
@@ -187,19 +181,19 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                         <Text style={styles.sectionTitle}>What's Included</Text>
                         <View style={styles.includesList}>
                             <View style={styles.includeItem}>
-                                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                                <Ionicons name="checkmark-circle" size={20} color={customerColors.success} />
                                 <Text style={styles.includeText}>Deep cleaning of all filters</Text>
                             </View>
                             <View style={styles.includeItem}>
-                                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                                <Ionicons name="checkmark-circle" size={20} color={customerColors.success} />
                                 <Text style={styles.includeText}>TDS and water quality check</Text>
                             </View>
                             <View style={styles.includeItem}>
-                                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                                <Ionicons name="checkmark-circle" size={20} color={customerColors.success} />
                                 <Text style={styles.includeText}>Sanitization of tank</Text>
                             </View>
                             <View style={styles.includeItem}>
-                                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                                <Ionicons name="checkmark-circle" size={20} color={customerColors.success} />
                                 <Text style={styles.includeText}>30-day service warranty</Text>
                             </View>
                         </View>
@@ -283,7 +277,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                             ) : (
                                 <Text style={styles.addressPlaceholder}>Select an address</Text>
                             )}
-                            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            <Ionicons name="chevron-forward" size={20} color={customerColors.textSecondary} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -292,7 +286,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             {/* Booking Success Overlay */}
             {bookingSuccess && (
                 <View style={styles.successOverlay}>
-                    <Ionicons name="checkmark-circle" size={64} color={colors.success} />
+                    <Ionicons name="checkmark-circle" size={64} color={customerColors.success} />
                     <Text style={styles.successTitle}>Booked Successfully! ✅</Text>
                     <Text style={styles.successDesc}>
                         {service.name} scheduled for {selectedTime ? (timeLabels[selectedTime] || selectedTime) : ''} on {selectedDate}
@@ -303,7 +297,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             {/* Error Banner */}
             {bookingError && (
                 <View style={styles.errorBanner}>
-                    <Ionicons name="alert-circle" size={20} color={colors.error} />
+                    <Ionicons name="alert-circle" size={20} color={customerColors.error} />
                     <Text style={styles.errorBannerText}>{bookingError}</Text>
                 </View>
             )}
@@ -329,14 +323,14 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Select Address</Text>
                             <TouchableOpacity onPress={() => setShowAddressPicker(false)}>
-                                <Ionicons name="close" size={24} color={colors.text} />
+                                <Ionicons name="close" size={24} color={customerColors.text} />
                             </TouchableOpacity>
                         </View>
                         {loadingAddresses ? (
-                            <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.xl }} />
+                            <ActivityIndicator size="large" color={customerColors.primary} style={{ marginTop: spacing.xl }} />
                         ) : addresses.length === 0 ? (
                             <View style={styles.emptyAddr}>
-                                <Ionicons name="location-outline" size={48} color={colors.textLight} />
+                                <Ionicons name="location-outline" size={48} color={customerColors.textLight} />
                                 <Text style={styles.emptyAddrText}>No addresses found</Text>
                                 <Text style={styles.emptyAddrSub}>Add one from your Profile → Addresses</Text>
                             </View>
@@ -356,7 +350,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                                             <Ionicons
                                                 name={isSelected ? 'radio-button-on' : 'radio-button-off'}
                                                 size={22}
-                                                color={isSelected ? colors.primary : colors.textMuted}
+                                                color={isSelected ? customerColors.primary : customerColors.textMuted}
                                             />
                                             <View style={{ flex: 1, marginLeft: spacing.sm }}>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
@@ -380,73 +374,105 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    header: { paddingTop: spacing.xl, paddingBottom: spacing.xl, borderBottomLeftRadius: borderRadius.xl, borderBottomRightRadius: borderRadius.xl },
-    backButton: { position: 'absolute', top: spacing.md, left: spacing.md, zIndex: 1, padding: spacing.sm },
-    headerContent: { alignItems: 'center', paddingTop: spacing.lg },
-    iconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md },
-    serviceName: { ...typography.h2, color: colors.textOnPrimary, textAlign: 'center' },
-    serviceDuration: { ...typography.body, color: colors.secondaryLight, marginTop: spacing.xs },
+    container: { flex: 1, backgroundColor: customerColors.background },
+    header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.headerTitle,
+        color: customerColors.textOnPrimary,
+        fontSize: 22,
+    },
+    headerSubtitle: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
     content: { padding: spacing.md },
-    priceCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.lg, ...shadows.md, marginBottom: spacing.lg },
-    priceLabel: { ...typography.bodySmall, color: colors.textSecondary },
-    priceValue: { ...typography.h2, color: colors.primary, fontWeight: '700' },
+    priceCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: customerColors.surface, padding: spacing.md, borderRadius: borderRadius.lg, ...shadows.md, marginBottom: spacing.lg },
+    priceLabel: { ...typography.bodySmall, color: customerColors.textSecondary },
+    priceValue: { ...typography.h2, color: customerColors.primary, fontWeight: '700' },
     priceNote: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    priceNoteText: { ...typography.caption, color: colors.info },
+    priceNoteText: { ...typography.caption, color: customerColors.info },
     section: { marginBottom: spacing.lg },
-    sectionTitle: { ...typography.h3, color: colors.text, marginBottom: spacing.md },
-    description: { ...typography.body, color: colors.textSecondary, lineHeight: 24 },
+    sectionTitle: { ...typography.h3, color: customerColors.text, marginBottom: spacing.md },
+    description: { ...typography.body, color: customerColors.textSecondary, lineHeight: 24 },
     includesList: { gap: spacing.sm },
     includeItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    includeText: { ...typography.body, color: colors.text },
+    includeText: { ...typography.body, color: customerColors.text },
     dateList: { gap: spacing.sm },
-    dateCard: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, backgroundColor: colors.surface, borderRadius: borderRadius.md, alignItems: 'center', borderWidth: 1, borderColor: colors.border, marginRight: spacing.sm },
-    dateCardSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-    dateDay: { ...typography.caption, color: colors.textSecondary },
-    dateDaySelected: { color: colors.textOnPrimary },
-    dateNum: { ...typography.h3, color: colors.text },
-    dateNumSelected: { color: colors.textOnPrimary },
+    dateCard: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, backgroundColor: customerColors.surface, borderRadius: borderRadius.md, alignItems: 'center', borderWidth: 1, borderColor: customerColors.border, marginRight: spacing.sm },
+    dateCardSelected: { backgroundColor: customerColors.primary, borderColor: customerColors.primary },
+    dateDay: { ...typography.caption, color: customerColors.textSecondary },
+    dateDaySelected: { color: customerColors.textOnPrimary },
+    dateNum: { ...typography.h3, color: customerColors.text },
+    dateNumSelected: { color: customerColors.textOnPrimary },
     timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-    timeSlot: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border },
-    timeSlotSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-    timeText: { ...typography.bodySmall, color: colors.text },
-    timeTextSelected: { color: colors.textOnPrimary },
+    timeSlot: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, backgroundColor: customerColors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: customerColors.border },
+    timeSlotSelected: { backgroundColor: customerColors.primary, borderColor: customerColors.primary },
+    timeText: { ...typography.bodySmall, color: customerColors.text },
+    timeTextSelected: { color: customerColors.textOnPrimary },
     // Address selector
-    addressSelector: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.border },
-    addressMain: { ...typography.body, fontWeight: '600', color: colors.text },
-    addressSub: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-    addressPlaceholder: { ...typography.body, color: colors.textMuted, flex: 1 },
+    addressSelector: { flexDirection: 'row', alignItems: 'center', backgroundColor: customerColors.surface, borderRadius: borderRadius.lg, padding: spacing.md, borderWidth: 1, borderColor: customerColors.border },
+    addressMain: { ...typography.body, fontWeight: '600', color: customerColors.text },
+    addressSub: { ...typography.caption, color: customerColors.textSecondary, marginTop: 2 },
+    addressPlaceholder: { ...typography.body, color: customerColors.textMuted, flex: 1 },
     // Bottom
-    bottomBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
-    bottomTotal: { ...typography.caption, color: colors.textSecondary },
-    bottomPrice: { ...typography.h3, color: colors.text, fontWeight: '700' },
-    bookButton: { paddingHorizontal: spacing.xl },
+    bottomBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.md, backgroundColor: customerColors.surface, borderTopWidth: 1, borderTopColor: customerColors.border },
+    bottomTotal: { ...typography.caption, color: customerColors.textSecondary },
+    bottomPrice: { ...typography.h3, color: customerColors.text, fontWeight: '700' },
+    bookButton: { paddingHorizontal: spacing.xl, backgroundColor: customerColors.primary },
     // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-    modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl, padding: spacing.lg, maxHeight: '70%' },
+    modalContent: { backgroundColor: customerColors.surface, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl, padding: spacing.lg, maxHeight: '70%' },
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
-    modalTitle: { ...typography.h2, fontSize: 18, color: colors.text },
+    modalTitle: { ...typography.h2, fontSize: 18, color: customerColors.text },
     emptyAddr: { alignItems: 'center', padding: spacing.xl },
-    emptyAddrText: { ...typography.body, color: colors.text, fontWeight: '600', marginTop: spacing.md },
-    emptyAddrSub: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
-    addrItem: { flexDirection: 'row', alignItems: 'flex-start', borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: spacing.md },
-    addrItemSelected: { backgroundColor: colors.primaryLight, borderRadius: borderRadius.md, paddingHorizontal: spacing.sm },
-    addrLabel: { ...typography.body, fontWeight: '700', color: colors.text },
-    addrLine: { ...typography.bodySmall, color: colors.textSecondary, marginTop: 2 },
-    addrCity: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-    defaultBadge: { backgroundColor: colors.primary + '20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 },
-    defaultBadgeText: { ...typography.caption, fontSize: 10, color: colors.primary, fontWeight: '700' },
+    emptyAddrText: { ...typography.body, color: customerColors.text, fontWeight: '600', marginTop: spacing.md },
+    emptyAddrSub: { ...typography.caption, color: customerColors.textSecondary, marginTop: spacing.xs },
+    addrItem: { flexDirection: 'row', alignItems: 'flex-start', borderBottomWidth: 1, borderBottomColor: customerColors.border, paddingVertical: spacing.md },
+    addrItemSelected: { backgroundColor: customerColors.primaryLight, borderRadius: borderRadius.md, paddingHorizontal: spacing.sm },
+    addrLabel: { ...typography.body, fontWeight: '700', color: customerColors.text },
+    addrLine: { ...typography.bodySmall, color: customerColors.textSecondary, marginTop: 2 },
+    addrCity: { ...typography.caption, color: customerColors.textSecondary, marginTop: 2 },
+    defaultBadge: { backgroundColor: customerColors.primary + '20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 },
+    defaultBadgeText: { ...typography.caption, fontSize: 10, color: customerColors.primary, fontWeight: '700' },
     // Success Overlay
     successOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: spacing.xl },
-    successTitle: { ...typography.h2, color: colors.success, marginTop: spacing.md, textAlign: 'center' },
-    successDesc: { ...typography.body, color: colors.textSecondary, marginTop: spacing.sm, textAlign: 'center' },
+    successTitle: { ...typography.h2, color: customerColors.success, marginTop: spacing.md, textAlign: 'center' },
+    successDesc: { ...typography.body, color: customerColors.textSecondary, marginTop: spacing.sm, textAlign: 'center' },
     // Error Banner
-    errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.error + '15', padding: spacing.md, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.error + '30' },
-    errorBannerText: { ...typography.bodySmall, color: colors.error, flex: 1, fontWeight: '600' },
+    errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: customerColors.error + '15', padding: spacing.md, gap: spacing.sm, borderTopWidth: 1, borderTopColor: customerColors.error + '30' },
+    errorBannerText: { ...typography.bodySmall, color: customerColors.error, flex: 1, fontWeight: '600' },
 
 });

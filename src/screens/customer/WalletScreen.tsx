@@ -6,11 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius, shadows } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { useWalletStore, useAuthStore, REFERRAL_CONSTANTS } from '../../store';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const WalletScreen: React.FC = () => {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
     const {
         balance,
         transactions,
@@ -40,13 +42,24 @@ export const WalletScreen: React.FC = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Wallet</Text>
-            </View>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={[customerColors.primary, customerColors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + spacing.md }]}
+            >
+                <Ionicons name="wallet" size={120} color="rgba(255,255,255,0.1)" style={styles.headerIconBg} />
+                <View style={styles.headerTop}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Ionicons name="chevron-back" size={28} color={colors.textOnPrimary} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.headerTitle}>My Wallet</Text>
+                        <Text style={styles.headerSubtitle}>Balance, Earnings & History</Text>
+                    </View>
+                </View>
+            </LinearGradient>
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
@@ -60,7 +73,7 @@ export const WalletScreen: React.FC = () => {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>
                     ) : null}
-                    <LinearGradient colors={[colors.gradientStart, colors.gradientEnd]} style={styles.balanceCard}>
+                    <LinearGradient colors={[customerColors.primary, customerColors.primaryDark]} style={styles.balanceCard}>
                         <Text style={styles.balanceLabel}>Available Balance</Text>
                         <Text style={styles.balanceAmount}>₹{balance}</Text>
                         <View style={styles.balanceActions}>
@@ -75,9 +88,14 @@ export const WalletScreen: React.FC = () => {
                         </View>
                     </LinearGradient>
 
-                    <View style={styles.referralCard}>
+                    <LinearGradient
+                        colors={[customerColors.primary, customerColors.primaryDark]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.referralCard}
+                    >
                         <View style={styles.referralHeader}>
-                            <Ionicons name="gift" size={32} color={colors.primary} />
+                            <Ionicons name="gift" size={32} color={colors.textOnPrimary} />
                             <View style={styles.referralContent}>
                                 <Text style={styles.referralTitle}>Refer & Earn</Text>
                                 <Text style={styles.referralDesc}>Get ₹{REFERRAL_CONSTANTS.REFERRER_JOINING_BONUS} for each friend who joins</Text>
@@ -88,10 +106,10 @@ export const WalletScreen: React.FC = () => {
                             <Text style={styles.referralCode}>{user?.referralCode || 'AQUA100'}</Text>
                         </View>
                         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-                            <Ionicons name="share-social" size={20} color={colors.textOnPrimary} />
+                            <Ionicons name="share-social" size={20} color={customerColors.primary} />
                             <Text style={styles.shareButtonText}>Share with Friends</Text>
                         </TouchableOpacity>
-                    </View>
+                    </LinearGradient>
 
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Transaction History</Text>
@@ -116,15 +134,50 @@ export const WalletScreen: React.FC = () => {
                     </View>
                 </ScrollView>
             )}
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    header: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface, ...shadows.sm },
-    backButton: { marginRight: spacing.md },
-    headerTitle: { ...typography.h3, color: colors.text },
+    container: { flex: 1, backgroundColor: '#FFFFFF' },
+    header: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    headerIconBg: {
+        position: 'absolute',
+        right: -20,
+        bottom: -20,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        width: 32,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.xs,
+        marginLeft: -spacing.sm,
+    },
+    headerTitleContainer: {
+        flex: 1,
+    },
+    headerTitle: {
+        ...typography.headerTitle,
+        color: colors.textOnPrimary,
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
     loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     loadingText: { ...typography.bodySmall, color: colors.textSecondary, marginTop: spacing.sm },
     scrollView: { flex: 1, padding: spacing.md },
@@ -139,21 +192,21 @@ const styles = StyleSheet.create({
     },
     errorText: { ...typography.caption, color: colors.error, flex: 1 },
     balanceCard: { borderRadius: borderRadius.xl, padding: spacing.lg, marginBottom: spacing.md },
-    balanceLabel: { ...typography.body, color: colors.secondaryLight },
-    balanceAmount: { ...typography.h1, color: colors.textOnPrimary, fontWeight: '700', marginVertical: spacing.sm },
+    balanceLabel: { ...typography.body, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
+    balanceAmount: { ...typography.h1, color: '#E0F7FA', fontWeight: '800', marginVertical: spacing.sm },
     balanceActions: { flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm },
     balanceAction: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    balanceActionText: { ...typography.bodySmall, color: colors.textOnPrimary },
-    referralCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.md, ...shadows.sm },
+    balanceActionText: { ...typography.bodySmall, color: colors.textOnPrimary, fontWeight: '600' },
+    referralCard: { borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.md },
     referralHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
     referralContent: { flex: 1 },
-    referralTitle: { ...typography.body, fontWeight: '600', color: colors.text },
-    referralDesc: { ...typography.caption, color: colors.textSecondary },
-    referralCodeBox: { backgroundColor: colors.surfaceSecondary, borderRadius: borderRadius.md, padding: spacing.md, alignItems: 'center', marginBottom: spacing.md },
-    referralCodeLabel: { ...typography.caption, color: colors.textSecondary },
-    referralCode: { ...typography.h2, color: colors.primary, fontWeight: '700', letterSpacing: 2 },
-    shareButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary, borderRadius: borderRadius.md, padding: spacing.md, gap: spacing.sm },
-    shareButtonText: { ...typography.body, fontWeight: '600', color: colors.textOnPrimary },
+    referralTitle: { ...typography.body, fontWeight: '700', color: colors.textOnPrimary },
+    referralDesc: { ...typography.caption, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
+    referralCodeBox: { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: borderRadius.md, padding: spacing.md, alignItems: 'center', marginBottom: spacing.md },
+    referralCodeLabel: { ...typography.caption, color: 'rgba(255,255,255,0.7)' },
+    referralCode: { ...typography.h2, color: colors.textOnPrimary, fontWeight: '800', letterSpacing: 2 },
+    shareButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderRadius: borderRadius.md, padding: spacing.md, gap: spacing.sm },
+    shareButtonText: { ...typography.body, fontWeight: '700', color: customerColors.primary },
     section: { marginBottom: spacing.xl },
     sectionTitle: { ...typography.h3, color: colors.text, marginBottom: spacing.md },
     emptyText: { ...typography.body, color: colors.textSecondary, textAlign: 'center' },

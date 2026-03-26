@@ -24,6 +24,20 @@ type ForgotPasswordScreenProps = {
     navigation: NativeStackNavigationProp<any>;
 };
 
+const blurWebActiveElement = () => {
+    if (Platform.OS !== 'web') {
+        return;
+    }
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    activeElement?.blur?.();
+};
+
+const goBackWithBlur = (navigation: NativeStackNavigationProp<any>) => {
+    blurWebActiveElement();
+    navigation.goBack();
+};
+
 export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -93,7 +107,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
             Alert.alert(
                 'Request Sent',
                 'If this email exists in our system, we have sent reset instructions.',
-                [{ text: 'OK', onPress: () => navigation.goBack() }]
+                [{ text: 'OK', onPress: () => goBackWithBlur(navigation) }]
             );
         }
     };
@@ -112,7 +126,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
                     <View style={styles.header}>
                         <TouchableOpacity
                             style={styles.backButton}
-                            onPress={() => navigation.goBack()}
+                            onPress={() => goBackWithBlur(navigation)}
                         >
                             <Ionicons name="chevron-back" size={28} color={colors.text} />
                         </TouchableOpacity>
@@ -158,7 +172,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
 
                             <TouchableOpacity
                                 style={styles.backToLogin}
-                                onPress={() => navigation.goBack()}
+                                onPress={() => goBackWithBlur(navigation)}
                             >
                                 <Ionicons name="chevron-back" size={20} color={colors.primary} />
                                 <Text style={styles.backToLoginText}>Back to Login</Text>

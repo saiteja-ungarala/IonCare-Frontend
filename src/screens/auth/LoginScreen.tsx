@@ -35,6 +35,11 @@ const blurWebActiveElement = () => {
     activeElement?.blur?.();
 };
 
+const navigateWithBlur = (callback: () => void) => {
+    blurWebActiveElement();
+    callback();
+};
+
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
     const [email, setEmail] = useState('');
@@ -219,7 +224,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         <View style={styles.header}>
                             <TouchableOpacity
                                 style={[styles.backButton, isCustomLogin && styles.glassButton]}
-                                onPress={() => navigation.goBack()}
+                                onPress={() => navigateWithBlur(() => navigation.goBack())}
                             >
                                 <Ionicons name="chevron-back" size={28} color={colors.text} />
                             </TouchableOpacity>
@@ -336,7 +341,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
                                         <TouchableOpacity
                                             style={styles.forgotPassword}
-                                            onPress={() => navigation.navigate('ForgotPassword')}
+                                            onPress={() => navigateWithBlur(() => navigation.navigate('ForgotPassword'))}
                                         >
                                             <Text style={[styles.forgotPasswordText, { color: activeThemeColor }]}>Forgot Password?</Text>
                                         </TouchableOpacity>
@@ -371,7 +376,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                                 <View style={styles.footer}>
                                     <View style={styles.footerRow}>
                                         <Text style={styles.footerText}>Don't have an account? </Text>
-                                        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                                        <TouchableOpacity onPress={() => navigateWithBlur(() => navigation.navigate('Signup'))}>
                                             <Text style={[styles.footerLink, { color: activeThemeColor }]}>Sign Up</Text>
                                         </TouchableOpacity>
                                     </View>

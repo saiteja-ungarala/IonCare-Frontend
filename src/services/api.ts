@@ -1,11 +1,28 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import { API_BASE_URL, STORAGE_KEYS } from '../config/constants';
-import { authService } from './authService';
+import {
+    API_BASE_URL,
+    FORCE_WEB_PROXY,
+    STORAGE_KEYS,
+    WEB_PROXY_BASE_URL,
+    isLocalApiUrl,
+} from '../config/constants';
+import { authStorage } from './authStorage';
 
 const BASE_URL = API_BASE_URL;
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
+type TokenRefreshHandler = () => Promise<string | null>;
+
+let tokenRefreshHandler: TokenRefreshHandler | null = null;
+let webBaseUrlPromise: Promise<string> | null = null;
+
 axios.defaults.timeout = 15000;
+
+export const setTokenRefreshHandler = (handler: TokenRefreshHandler): void => {
+    tokenRefreshHandler = handler;
+};
 
 if (__DEV__) {
     console.log('[API] Base URL:', BASE_URL);
@@ -21,10 +38,7 @@ const api = axios.create({
 
 const getStoredToken = async (): Promise<string | null> => {
     try {
-        if (Platform.OS === 'web') {
-            return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-        }
-        return await SecureStore.getItemAsync(STORAGE_KEYS.AUTH_TOKEN);
+        return await authStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     } catch (error) {
         if (__DEV__) {
             console.error('[API] Error getting auth token:', error);
@@ -35,15 +49,11 @@ const getStoredToken = async (): Promise<string | null> => {
 
 const clearStoredTokens = async (): Promise<void> => {
     try {
-        if (Platform.OS === 'web') {
-            localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-            localStorage.removeItem(STORAGE_KEYS.USER);
-        } else {
-            await SecureStore.deleteItemAsync(STORAGE_KEYS.AUTH_TOKEN);
-            await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
-            await SecureStore.deleteItemAsync(STORAGE_KEYS.USER);
-        }
+        await authStorage.clearItems([
+            STORAGE_KEYS.AUTH_TOKEN,
+            STORAGE_KEYS.REFRESH_TOKEN,
+            STORAGE_KEYS.USER,
+        ]);
     } catch (error) {
         if (__DEV__) {
             console.error('[API] Error clearing tokens:', error);
@@ -51,8 +61,56 @@ const clearStoredTokens = async (): Promise<void> => {
     }
 };
 
+const shouldProbeWebProxy = (): boolean => {
+    return Platform.OS === 'web'
+        && Boolean(WEB_PROXY_BASE_URL)
+        && isLocalApiUrl(WEB_PROXY_BASE_URL as string)
+        && !FORCE_WEB_PROXY;
+};
+
+const probeWebProxy = async (): Promise<string> => {
+    if (!shouldProbeWebProxy()) {
+        return BASE_URL;
+    }
+
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 800) : null;
+
+    try {
+        const response = await fetch(`${WEB_PROXY_BASE_URL}/auth/login`, {
+            method: 'OPTIONS',
+            signal: controller?.signal,
+        });
+
+        return response.ok ? (WEB_PROXY_BASE_URL as string) : BASE_URL;
+    } catch {
+        return BASE_URL;
+    } finally {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+    }
+};
+
+const getRuntimeBaseUrl = async (): Promise<string> => {
+    if (!shouldProbeWebProxy()) {
+        return BASE_URL;
+    }
+
+    webBaseUrlPromise ??= probeWebProxy().then((resolvedBaseUrl) => {
+        if (__DEV__ && resolvedBaseUrl !== BASE_URL) {
+            console.log('[API] Using local web proxy:', resolvedBaseUrl);
+        }
+        return resolvedBaseUrl;
+    });
+
+    return await webBaseUrlPromise;
+};
+
 api.interceptors.request.use(
     async (config) => {
+        config.baseURL = await getRuntimeBaseUrl();
+
         if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
             const headers = config.headers as Record<string, any> & { delete?: (name: string) => void };
             if (typeof headers?.delete === 'function') {
@@ -67,13 +125,11 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
     },
     (error) => Promise.reject(error)
 );
-
-const MAX_RETRIES = 2;
-const RETRY_DELAY_MS = 1000;
 
 const isAuthRoute = (url?: string): boolean => {
     if (!url) return false;
@@ -94,7 +150,7 @@ api.interceptors.response.use(
             }
 
             try {
-                const newToken = await authService.refreshToken();
+                const newToken = tokenRefreshHandler ? await tokenRefreshHandler() : null;
                 if (newToken) {
                     if (__DEV__) {
                         console.log('[API] Refresh successful - retrying request');

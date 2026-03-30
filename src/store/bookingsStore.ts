@@ -70,7 +70,7 @@ export const useBookingsStore = create<BookingsStore>((set, get) => ({
         }
     },
 
-    // Local state update used in agent UI flow.
+    // Local state update used in technician UI flow.
     updateBookingStatus: (bookingId: string, status: Booking['status']) => {
         set((state) => ({
             bookings: state.bookings.map((b) =>

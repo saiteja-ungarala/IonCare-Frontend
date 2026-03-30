@@ -102,8 +102,6 @@ export type BookingStatus =
     | 'pending'
     | 'confirmed'
     | 'assigned'
-    | 'technician_assigned'
-    | 'on_the_way'
     | 'in_progress'
     | 'completed'
     | 'cancelled';

@@ -68,6 +68,7 @@ export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navi
         me,
         isOnline,
         jobs,
+        jobsMeta,
         loading,
         error,
         fetchMe,
@@ -161,6 +162,22 @@ export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navi
         if (!activeCampaign || !progress || progress.nextThreshold === null) return null;
         return activeCampaign.tiers.find((tier) => tier.thresholdQty === progress.nextThreshold) || null;
     }, [activeCampaign, progress]);
+
+    const emptyStateContent = useMemo(() => {
+        if (!isOnline) {
+            return { title: 'You are offline', subtitle: 'Go online to see available jobs.' };
+        }
+        if (jobsMeta && !jobsMeta.distance_filter_applied && jobsMeta.note) {
+            return { title: 'No jobs visible', subtitle: jobsMeta.note };
+        }
+        if (jobsMeta?.distance_filter_applied && jobsMeta.service_radius_km !== undefined) {
+            return {
+                title: 'No nearby jobs',
+                subtitle: `No available jobs within ${jobsMeta.service_radius_km} km of your location. Pull to refresh.`,
+            };
+        }
+        return { title: 'No jobs right now', subtitle: 'Pull to refresh to check for new requests.' };
+    }, [isOnline, jobsMeta]);
 
     const earnBannerMessage = useMemo(() => {
         if (activeCampaign && progress && nextTier) {
@@ -294,8 +311,8 @@ export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navi
                 ListHeaderComponent={<TechnicianSectionHeader title="Available Jobs" subtitle={`${filteredJobs.length} jobs`} />}
                 ListEmptyComponent={
                     <TechnicianCard style={styles.emptyCard}>
-                        <Text style={styles.emptyTitle}>No jobs right now</Text>
-                        <Text style={styles.emptySubtitle}>Keep online mode enabled and pull to refresh.</Text>
+                        <Text style={styles.emptyTitle}>{emptyStateContent.title}</Text>
+                        <Text style={styles.emptySubtitle}>{emptyStateContent.subtitle}</Text>
                     </TechnicianCard>
                 }
             />

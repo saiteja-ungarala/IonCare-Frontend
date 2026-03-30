@@ -6,6 +6,7 @@ import {
     StatusBar,
     Image,
     ImageBackground,
+    Platform,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -170,9 +171,13 @@ const styles = StyleSheet.create({
         ...typography.h1,
         color: '#FFFFFF', // White text for contrast against blue water
         marginBottom: spacing.xs,
-        textShadowColor: 'rgba(0,0,0,0.5)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 3,
+        ...(Platform.OS === 'web'
+            ? { textShadow: '0px 1px 3px rgba(0, 0, 0, 0.5)' }
+            : {
+                textShadowColor: 'rgba(0,0,0,0.5)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 3,
+            }),
     },
     tagline: {
         ...typography.body,

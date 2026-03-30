@@ -169,7 +169,12 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
         const statusColor = getStatusColor(booking.status);
 
         return (
-            <View key={booking.id} style={styles.bookingCard}>
+            <TouchableOpacity
+                key={booking.id}
+                style={styles.bookingCard}
+                activeOpacity={0.95}
+                onPress={() => navigation.navigate('BookingDetail', { bookingId: Number(booking.id) })}
+            >
                 {/* Status gradient top bar */}
                 <View style={[styles.cardTopBar, { backgroundColor: statusColor }]} />
 
@@ -225,7 +230,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({ navigation, rout
                         )}
                     </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 

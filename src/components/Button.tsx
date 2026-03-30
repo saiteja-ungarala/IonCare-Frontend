@@ -67,10 +67,13 @@ export const Button: React.FC<ButtonProps> = ({
             ...styles.container,
             ...(fullWidth ? styles.fullWidth : {}),
         };
+        const primaryShadowStyle = Platform.OS === 'web'
+            ? ({ boxShadow: '0px 3px 6px rgba(0, 194, 179, 0.28)' } as ViewStyle)
+            : { ...shadows.md, shadowColor: colors.primary };
 
         switch (variant) {
             case 'primary':
-                return { ...base, backgroundColor: colors.primary, ...shadows.md, shadowColor: colors.primary };
+                return { ...base, backgroundColor: colors.primary, ...primaryShadowStyle };
             case 'secondary':
                 return { ...base, backgroundColor: colors.primaryLight };
             case 'outline':
@@ -178,8 +181,11 @@ const styles = StyleSheet.create({
     },
     disabled: {
         opacity: 0.5,
-        // Remove shadow for disabled state
-        elevation: 0,
-        shadowOpacity: 0,
+        ...(Platform.OS === 'web'
+            ? ({ boxShadow: 'none' } as ViewStyle)
+            : {
+                elevation: 0,
+                shadowOpacity: 0,
+            }),
     },
 });

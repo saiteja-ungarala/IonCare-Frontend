@@ -1,7 +1,5 @@
 // Auth Service - Real API implementation
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import api from './api';
+import api, { setTokenRefreshHandler } from './api';
 import {
     User,
     LoginCredentials,
@@ -12,30 +10,9 @@ import {
 } from '../models/types';
 import { STORAGE_KEYS } from '../config/constants';
 import { getApiErrorMessage } from '../utils/errorMessage';
+import { authStorage } from './authStorage';
 
-// Storage helper functions
-const storage = {
-    getItem: async (key: string): Promise<string | null> => {
-        if (Platform.OS === 'web') {
-            return localStorage.getItem(key);
-        }
-        return await SecureStore.getItemAsync(key);
-    },
-    setItem: async (key: string, value: string): Promise<void> => {
-        if (Platform.OS === 'web') {
-            localStorage.setItem(key, value);
-        } else {
-            await SecureStore.setItemAsync(key, value);
-        }
-    },
-    deleteItem: async (key: string): Promise<void> => {
-        if (Platform.OS === 'web') {
-            localStorage.removeItem(key);
-        } else {
-            await SecureStore.deleteItemAsync(key);
-        }
-    }
-};
+const storage = authStorage;
 
 const normalizeRole = (value: unknown): UserRole | null => {
     if (typeof value !== 'string') return null;
@@ -392,3 +369,5 @@ export const authService = {
         }
     },
 };
+
+setTokenRefreshHandler(() => authService.refreshToken());

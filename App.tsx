@@ -5,7 +5,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 
@@ -65,14 +64,14 @@ type AppErrorBoundaryState = {
     hasError: boolean;
 };
 
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-    }),
-});
+type ExpoNotificationsModule = typeof import('expo-notifications');
+
+let notificationsModulePromise: Promise<ExpoNotificationsModule> | null = null;
+
+const loadNotificationsModule = (): Promise<ExpoNotificationsModule> => {
+    notificationsModulePromise ??= import('expo-notifications');
+    return notificationsModulePromise;
+};
 
 class AppErrorBoundary extends React.Component<React.PropsWithChildren, AppErrorBoundaryState> {
     state: AppErrorBoundaryState = { hasError: false };
@@ -354,6 +353,36 @@ export default function App() {
     const [isReady, setIsReady] = React.useState(false);
 
     React.useEffect(() => {
+        if (Platform.OS === 'web') {
+            return;
+        }
+
+        let active = true;
+
+        const configureNotifications = async () => {
+            const Notifications = await loadNotificationsModule();
+            if (!active) {
+                return;
+            }
+
+            Notifications.setNotificationHandler({
+                handleNotification: async () => ({
+                    shouldShowBanner: true,
+                    shouldShowList: true,
+                    shouldPlaySound: true,
+                    shouldSetBadge: false,
+                }),
+            });
+        };
+
+        void configureNotifications();
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    React.useEffect(() => {
         const init = async () => {
             try {
                 await checkAuth();
@@ -375,6 +404,8 @@ export default function App() {
 
         const registerPushToken = async () => {
             try {
+                const Notifications = await loadNotificationsModule();
+
                 if (Platform.OS === 'android') {
                     await Notifications.setNotificationChannelAsync('default', {
                         name: 'default',

@@ -26,8 +26,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
     pending: { label: 'Pending', color: '#9CA3AF' },
     confirmed: { label: 'Confirmed', color: colors.info },
     assigned: { label: 'Assigned', color: '#F97316' },
-    technician_assigned: { label: 'Technician Assigned', color: '#F97316' },
-    on_the_way: { label: 'On The Way', color: '#8B5CF6' },
     in_progress: { label: 'In Progress', color: '#EAB308' },
     completed: { label: 'Completed', color: colors.success },
     cancelled: { label: 'Cancelled', color: colors.error },

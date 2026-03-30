@@ -1,14 +1,14 @@
 import { Platform } from 'react-native';
 
-const DEFAULT_API_URL = 'https://ioncare-backend-production.up.railway.app/api';
-const FORCE_WEB_PROXY = process.env.EXPO_PUBLIC_FORCE_WEB_PROXY === 'true';
+export const DEFAULT_API_URL = 'https://ioncare-backend-production.up.railway.app/api';
+export const FORCE_WEB_PROXY = process.env.EXPO_PUBLIC_FORCE_WEB_PROXY === 'true';
 
-const normalizeApiUrl = (url: string): string => {
+export const normalizeApiUrl = (url: string): string => {
     const trimmed = url.trim().replace(/\/+$/, '');
     return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
 };
 
-const isLocalApiUrl = (url: string): boolean => {
+export const isLocalApiUrl = (url: string): boolean => {
     try {
         const parsed = new URL(url);
         const hostname = parsed.hostname.toLowerCase();
@@ -18,12 +18,16 @@ const isLocalApiUrl = (url: string): boolean => {
     }
 };
 
+export const WEB_PROXY_BASE_URL = process.env.EXPO_PUBLIC_WEB_API_URL?.trim()
+    ? normalizeApiUrl(process.env.EXPO_PUBLIC_WEB_API_URL.trim())
+    : null;
+
 const resolveApiBaseUrl = (): string => {
     const configuredUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
-    const configuredWebUrl = process.env.EXPO_PUBLIC_WEB_API_URL?.trim();
+    const configuredWebUrl = WEB_PROXY_BASE_URL;
     const shouldUseWebUrl = Platform.OS === 'web'
         && Boolean(configuredWebUrl)
-        && (FORCE_WEB_PROXY || !isLocalApiUrl(configuredWebUrl));
+        && (FORCE_WEB_PROXY || !isLocalApiUrl(configuredWebUrl as string));
     const resolved = normalizeApiUrl(
         shouldUseWebUrl && configuredWebUrl
             ? configuredWebUrl
@@ -33,7 +37,7 @@ const resolveApiBaseUrl = (): string => {
     if (__DEV__) {
         const usingImplicitDirectWebFallback = Platform.OS === 'web'
             && Boolean(configuredWebUrl)
-            && isLocalApiUrl(configuredWebUrl)
+            && isLocalApiUrl(configuredWebUrl as string)
             && !FORCE_WEB_PROXY;
         console.log(
             usingImplicitDirectWebFallback

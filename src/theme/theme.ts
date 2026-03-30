@@ -1,7 +1,7 @@
 // Theme configuration for IONORA CARE (Vibrant Aqua + Mango)
 // Goals: modern, clean, high-contrast, consistent across Service + Store
 
-import { Platform } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 
 export type ColorMode = 'light' | 'dark';
 
@@ -244,28 +244,52 @@ export const typography = {
     },
 };
 
+const createShadow = (config: {
+    boxShadow: string;
+    shadowColor: string;
+    shadowOffset: { width: number; height: number };
+    shadowOpacity: number;
+    shadowRadius: number;
+    elevation: number;
+}): ViewStyle => {
+    if (Platform.OS === 'web') {
+        return { boxShadow: config.boxShadow } as ViewStyle;
+    }
+
+    return {
+        shadowColor: config.shadowColor,
+        shadowOffset: config.shadowOffset,
+        shadowOpacity: config.shadowOpacity,
+        shadowRadius: config.shadowRadius,
+        elevation: config.elevation,
+    };
+};
+
 export const shadows = {
-    sm: {
+    sm: createShadow({
+        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.06)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.06,
         shadowRadius: 2,
         elevation: 1,
-    },
-    md: {
+    }),
+    md: createShadow({
+        boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.10)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.10,
         shadowRadius: 6,
         elevation: 3,
-    },
-    lg: {
+    }),
+    lg: createShadow({
+        boxShadow: '0px 8px 14px rgba(0, 0, 0, 0.14)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.14,
         shadowRadius: 14,
         elevation: 6,
-    },
+    }),
 };
 
 export default {

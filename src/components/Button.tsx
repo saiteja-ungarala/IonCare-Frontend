@@ -7,6 +7,7 @@ import {
     Text,
     StyleSheet,
     ActivityIndicator,
+    StyleProp,
     ViewStyle,
     TextStyle,
     View,
@@ -24,8 +25,8 @@ interface ButtonProps {
     loading?: boolean;
     fullWidth?: boolean;
     icon?: React.ReactNode;
-    style?: ViewStyle;
-    textStyle?: TextStyle;
+    style?: StyleProp<ViewStyle>;
+    textStyle?: StyleProp<TextStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = ({

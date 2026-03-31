@@ -42,7 +42,6 @@ const server = http.createServer((req, res) => {
             forwardedHeaders[headerName] = req.headers[headerName];
         }
     }
-
     const proxyReq = https.request(
         {
             hostname: TARGET_HOST,

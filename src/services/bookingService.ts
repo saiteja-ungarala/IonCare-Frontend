@@ -51,7 +51,8 @@ export const bookingService = {
             const params = status ? { status } : {};
             const response = await api.get('/bookings', { params });
             const { data } = response.data;
-            const list = Array.isArray(data) ? data : (data?.list || []);
+            const rawList = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+            const list = rawList;
             return list.map(mapBackendBooking);
         } catch (error: any) {
             console.error('Error fetching bookings:', error.message);

@@ -3,12 +3,11 @@
     "name": "IONORA CARE",
     "slug": "ioncare",
     "version": "1.0.0",
-    "newArchEnabled": false,
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/ionora-mark.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/ionora-mark.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,7 +15,6 @@
       "bundleIdentifier": "com.ioncare.app",
       "buildNumber": "1",
       "supportsTablet": false,
-      "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -30,7 +28,7 @@
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/ionora-mark.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [

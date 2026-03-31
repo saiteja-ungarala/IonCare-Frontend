@@ -37,7 +37,7 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
     const [addingToCart, setAddingToCart] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { addProductToCart, totalItems, fetchCart } = useCartStore();
+    const { addProductToCart, items, totalItems, fetchCart } = useCartStore();
 
     useEffect(() => {
         loadProduct();
@@ -139,6 +139,9 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
         ? Math.round(((mrp - product.price) / mrp) * 100)
         : 0;
     const imageSource = resolveProductImageSource(product.imageUrl);
+    const productCartItem = items.find((item) => item.itemType === 'product' && item.productId === product.id);
+    const quantityInCart = productCartItem?.qty ?? 0;
+    const isInCart = quantityInCart > 0;
 
     return (
         <View style={styles.container}>
@@ -214,6 +217,13 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                         )}
                     </View>
 
+                    {isInCart && (
+                        <View style={styles.inCartBadge}>
+                            <Ionicons name="checkmark-circle" size={18} color={customerColors.success} />
+                            <Text style={styles.inCartText}>Already in cart • Qty {quantityInCart}</Text>
+                        </View>
+                    )}
+
                     {/* Free Installation Banner */}
                     <View style={styles.offerBanner}>
                         <Ionicons name="gift" size={24} color={customerColors.success} />
@@ -264,10 +274,11 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
             {inStock && (
                 <View style={styles.bottomBar}>
                     <Button
-                        title={addingToCart ? 'Adding...' : 'Add to Cart'}
-                        onPress={handleAddToCart}
-                        variant="outline"
-                        style={styles.addToCartButton}
+                        title={addingToCart ? 'Adding...' : isInCart ? 'View Cart' : 'Add to Cart'}
+                        onPress={isInCart ? () => navigation.navigate('Cart') : handleAddToCart}
+                        variant={isInCart ? 'secondary' : 'outline'}
+                        style={[styles.addToCartButton, isInCart ? styles.inCartButton : null]}
+                        textStyle={isInCart ? styles.inCartButtonText : undefined}
                         disabled={addingToCart}
                     />
                     <Button
@@ -446,6 +457,22 @@ const styles = StyleSheet.create({
         color: customerColors.success,
         fontWeight: '600',
     },
+    inCartBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        backgroundColor: customerColors.success + '14',
+        borderRadius: borderRadius.full,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.xs + 2,
+        marginBottom: spacing.md,
+        gap: spacing.xs,
+    },
+    inCartText: {
+        ...typography.caption,
+        color: customerColors.success,
+        fontWeight: '700',
+    },
     offerBanner: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -522,6 +549,13 @@ const styles = StyleSheet.create({
     },
     addToCartButton: {
         flex: 1,
+    },
+    inCartButton: {
+        borderWidth: 0,
+        backgroundColor: customerColors.success + '18',
+    },
+    inCartButtonText: {
+        color: customerColors.success,
     },
     buyNowButton: {
         flex: 1,

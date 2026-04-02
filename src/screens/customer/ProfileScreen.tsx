@@ -95,6 +95,43 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         }
     };
 
+    const confirmDeleteAccount = async () => {
+        try {
+            await profileService.deleteAccount();
+            await logout();
+        } catch (error: any) {
+            const message = error?.message || 'We could not delete your account right now.';
+            if (Platform.OS === 'web') {
+                window.alert(message);
+                return;
+            }
+            Alert.alert('Delete Account', message);
+        }
+    };
+
+    const handleDeleteAccount = () => {
+        const message = 'This will delete your account from within the app and sign you out. Some order, booking, refund, or compliance records may still be kept where required.';
+
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm(message);
+            if (confirmed) {
+                void confirmDeleteAccount();
+            }
+            return;
+        }
+
+        Alert.alert('Delete Account', message, [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete Account',
+                style: 'destructive',
+                onPress: () => {
+                    void confirmDeleteAccount();
+                },
+            },
+        ]);
+    };
+
     return (
         <View style={styles.container}>
             <LinearGradient
@@ -179,7 +216,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                             onPress={() => navigation.navigate('OrderHistory', { enableBack: true })}
                         />
                         <MenuItem icon="location-outline" title="Addresses" subtitle="Manage delivery addresses" onPress={() => navigation.navigate('Addresses')} />
-                        <MenuItem icon="card-outline" title="Payment Methods" subtitle="Cards, UPI, Wallets" onPress={() => navigation.navigate('PaymentMethods')} />
+                        <MenuItem icon="card-outline" title="Payment Methods" subtitle="Cash on Delivery & upcoming options" onPress={() => navigation.navigate('PaymentMethods')} />
                         <MenuItem icon="notifications-outline" title="Notifications" subtitle="Manage preferences" onPress={() => navigation.navigate('Notifications')} />
                     </View>
                 </View>
@@ -196,6 +233,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
                 <View style={styles.section}>
                     <View style={styles.menuCard}>
+                        <MenuItem
+                            icon="trash-outline"
+                            title="Delete Account"
+                            subtitle="Permanently remove access to your account"
+                            onPress={handleDeleteAccount}
+                            danger
+                        />
                         <MenuItem icon="log-out-outline" title="Logout" onPress={handleLogout} danger />
                     </View>
                 </View>

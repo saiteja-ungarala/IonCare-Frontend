@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { technicianTheme } from '../../theme/technicianTheme';
 import { TechnicianButton, TechnicianCard, TechnicianChip, TechnicianScreen, TechnicianSectionHeader } from '../../components/technician';
 import { useTechnicianStore, useAuthStore } from '../../store';
+import { profileService } from '../../services/profileService';
 
 export const TechnicianProfileScreen: React.FC = () => {
     const { me, isOnline, fetchMe, reset } = useTechnicianStore();
@@ -39,6 +40,43 @@ export const TechnicianProfileScreen: React.FC = () => {
                 style: 'destructive',
                 onPress: () => {
                     void doLogout();
+                },
+            },
+        ]);
+    };
+
+    const confirmDeleteAccount = async () => {
+        try {
+            await profileService.deleteAccount();
+            await doLogout();
+        } catch (error: any) {
+            const message = error?.message || 'We could not delete your account right now.';
+            if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                window.alert(message);
+                return;
+            }
+            Alert.alert('Delete Account', message);
+        }
+    };
+
+    const deleteAccount = () => {
+        const message = 'This will delete your account from within the app and sign you out. Some order, booking, refund, or compliance records may still be kept where required.';
+
+        if (Platform.OS === 'web') {
+            const confirmed = typeof window !== 'undefined' ? window.confirm(message) : true;
+            if (confirmed) {
+                void confirmDeleteAccount();
+            }
+            return;
+        }
+
+        Alert.alert('Delete Account', message, [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete Account',
+                style: 'destructive',
+                onPress: () => {
+                    void confirmDeleteAccount();
                 },
             },
         ]);
@@ -120,6 +158,12 @@ export const TechnicianProfileScreen: React.FC = () => {
                     variant="secondary"
                     onPress={logoutUser}
                     loading={isLoading}
+                    disabled={isLoading}
+                />
+                <TechnicianButton
+                    title="Delete Account"
+                    variant="secondary"
+                    onPress={deleteAccount}
                     disabled={isLoading}
                 />
             </ScrollView>

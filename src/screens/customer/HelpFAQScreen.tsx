@@ -20,7 +20,7 @@ const FAQ_DATA = [
     },
     {
         q: 'What payment methods are accepted?',
-        a: 'Currently, Cash on Delivery (pay when the technician arrives) and IONORA Wallet credits (earned from referrals or refunds) are accepted. Online payments via UPI, cards, and net banking are coming soon.',
+        a: 'Payments are currently Cash on Delivery (COD) only. If you see referral or refund credits in your wallet, they are account credits, not a live card or UPI checkout option. Online payments via UPI, cards, and net banking are coming soon.',
     },
     {
         q: 'How long does a service typically take?',
@@ -48,7 +48,7 @@ const FAQ_DATA = [
     },
     {
         q: 'Is my personal data secure?',
-        a: 'Yes. IONORA CARE uses industry-standard encryption for data in transit and at rest. Your payment details are processed through certified payment gateways and are never stored on our servers. You can request account deletion from your Profile settings at any time.',
+        a: 'We use reasonable safeguards to protect your account and app data. Because payments are currently Cash on Delivery, the app does not currently collect card or UPI payment details for checkout. You can delete your account from within the app from the Profile screen.',
     },
 ];
 

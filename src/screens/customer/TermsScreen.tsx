@@ -12,13 +12,34 @@ import { customerColors } from '../../theme/customerTheme';
 type Props = { navigation: NativeStackNavigationProp<any> };
 
 const SECTIONS = [
-    { title: '1. Acceptance of Terms', body: 'By accessing or using IONORA CARE services, you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the application.' },
-    { title: '2. Services', body: 'IONORA CARE provides water purifier installation, maintenance, and repair services, as well as an e-commerce platform for water care products. Service availability may vary by location.' },
-    { title: '3. User Accounts', body: 'You are responsible for maintaining the confidentiality of your account credentials. You must provide accurate information during registration and keep it updated.' },
-    { title: '4. Bookings & Cancellations', body: 'Bookings are subject to service technician availability. Cancellations made less than 2 hours before the scheduled time may incur a cancellation fee.' },
-    { title: '5. Payments & Refunds', body: 'All payments are processed securely. Refunds for cancelled services will be credited to your IONORA CARE wallet within 3–5 business days.' },
-    { title: '6. Limitation of Liability', body: 'IONORA CARE shall not be liable for any indirect, incidental, or consequential damages arising from the use of our services.' },
-    { title: '7. Changes to Terms', body: 'We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.' },
+    {
+        title: '1. Using the App',
+        body: 'By using IONORA CARE, you agree to use the app only for lawful purposes and to provide true, current, and complete information. If you do not agree with these terms, please do not use the app.',
+    },
+    {
+        title: '2. Accounts',
+        body: 'You are responsible for keeping your login details safe and for activity under your account. The app currently supports customer, technician, and dealer accounts, and each role must use the app only for its intended purpose.',
+    },
+    {
+        title: '3. Services and Orders',
+        body: 'IONORA CARE helps users book water purifier services and place product orders, subject to technician availability, stock availability, service area coverage, and operational limits. Scheduled times are requested slots and may change if availability changes.',
+    },
+    {
+        title: '4. Payments',
+        body: 'Payments are currently Cash on Delivery (COD) only. This means payment is collected when the product or service is delivered or completed. Online payments such as UPI, cards, and net banking are coming soon and will be enabled in a future update.',
+    },
+    {
+        title: '5. Cancellations, Wallet Credits, and Refunds',
+        body: 'Bookings and orders may be cancelled only through the options allowed in the app. If a refund or promotional credit is approved, it may be added to your IONORA CARE wallet or handled through our support process. Wallet visibility does not mean online payments are currently live.',
+    },
+    {
+        title: '6. Service Limitations',
+        body: 'We work to keep the app and services available, but we cannot promise uninterrupted access, exact technician arrival times, or availability in every location. We are not responsible for indirect losses caused by downtime, delays, or events outside our reasonable control.',
+    },
+    {
+        title: '7. Account Closure and Updates',
+        body: 'Users can delete their account from within the app. We may also update these Terms when the product changes. Continued use of the app after an update means you accept the revised Terms.',
+    },
 ];
 
 export const TermsScreen: React.FC<Props> = ({ navigation }) => {
@@ -38,7 +59,7 @@ export const TermsScreen: React.FC<Props> = ({ navigation }) => {
                     </TouchableOpacity>
                     <View style={styles.headerTitleContainer}>
                         <Text style={styles.headerTitle}>Terms & Conditions</Text>
-                        <Text style={styles.headerSubtitle}>Last updated: February 2026</Text>
+                        <Text style={styles.headerSubtitle}>Last updated: April 2, 2026</Text>
                     </View>
                 </View>
             </LinearGradient>

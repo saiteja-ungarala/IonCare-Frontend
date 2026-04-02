@@ -52,6 +52,16 @@ export const profileService = {
         }
     },
 
+    async deleteAccount(): Promise<boolean> {
+        try {
+            await api.delete('/user/profile');
+            return true;
+        } catch (error: any) {
+            console.error('Error deleting account:', error.message);
+            throw new Error(error.response?.data?.message || 'Failed to delete account');
+        }
+    },
+
     // Get all addresses
     async getAddresses(): Promise<Address[]> {
         try {

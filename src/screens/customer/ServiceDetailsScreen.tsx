@@ -29,6 +29,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
     const [booking, setBooking] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [bookingError, setBookingError] = useState<string | null>(null);
+    const [createdBookingId, setCreatedBookingId] = useState<number | null>(null);
     const createBooking = useBookingsStore((s) => s.createBooking);
 
     // When user adds an address and returns, re-open picker with fresh list
@@ -119,21 +120,18 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             });
 
             const bookingId = newBooking ? Number(newBooking.id) : 0;
-            const bookingPrice = newBooking ? (newBooking.totalAmount ?? 0) : service.price;
+            setCreatedBookingId(bookingId > 0 ? bookingId : null);
 
-            if (bookingPrice > 0 && bookingId > 0) {
+            setBookingSuccess(true);
                 // Paid booking — go to payment screen
-                navigation.navigate('PaymentScreen', {
-                    amount: bookingPrice,
-                    entityType: 'booking',
-                    entityId: bookingId,
-                    description: service.name,
-                });
-            } else {
+                setTimeout(() => {
+                    if (bookingId > 0) {
+                        navigation.replace('BookingDetail', { bookingId });
+                        return;
+                    }
+                    navigation.goBack();
+                }, 1800);
                 // First Service Free — show success overlay
-                setBookingSuccess(true);
-                setTimeout(() => navigation.goBack(), 2000);
-            }
         } catch (error: any) {
             console.error('[Booking] Error:', error);
             setBookingError(error.message || 'Booking failed. Please try again.');
@@ -304,6 +302,10 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                     <Text style={styles.successDesc}>
                         {service.name} scheduled for {selectedTime ? (timeLabels[selectedTime] || selectedTime) : ''} on {selectedDate}
                     </Text>
+                    <Text style={styles.successSubtext}>Payment for this booking is currently Cash on Delivery.</Text>
+                    {createdBookingId ? (
+                        <Text style={styles.successSubtext}>Booking #{createdBookingId} is now ready to track.</Text>
+                    ) : null}
                 </View>
             )}
 
@@ -511,6 +513,7 @@ const styles = StyleSheet.create({
     successOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: spacing.xl },
     successTitle: { ...typography.h2, color: customerColors.success, marginTop: spacing.md, textAlign: 'center' },
     successDesc: { ...typography.body, color: customerColors.textSecondary, marginTop: spacing.sm, textAlign: 'center' },
+    successSubtext: { ...typography.bodySmall, color: customerColors.textSecondary, marginTop: spacing.xs, textAlign: 'center' },
     // Error Banner
     errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: customerColors.error + '15', padding: spacing.md, gap: spacing.sm, borderTopWidth: 1, borderTopColor: customerColors.error + '30' },
     errorBannerText: { ...typography.bodySmall, color: customerColors.error, flex: 1, fontWeight: '600' },

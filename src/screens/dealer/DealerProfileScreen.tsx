@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { dealerTheme } from '../../theme/dealerTheme';
 import { DealerScreen } from '../../components/dealer/DealerScreen';
 import { useAuthStore, useDealerStore } from '../../store';
+import { profileService } from '../../services/profileService';
 
 const getStatusTone = (status: string): { bg: string; text: string } => {
     if (status === 'approved') return { bg: '#E7F3EC', text: dealerTheme.colors.success };
@@ -47,6 +48,28 @@ export const DealerProfileScreen: React.FC = () => {
             setEditing(false);
             Alert.alert('Updated', 'Dealer profile updated successfully.');
         }
+    };
+
+    const deleteAccount = () => {
+        Alert.alert(
+            'Delete Account',
+            'This will delete your account from within the app and sign you out. Some order, booking, refund, or compliance records may still be kept where required.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete Account',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await profileService.deleteAccount();
+                            await logout();
+                        } catch (deleteError: any) {
+                            Alert.alert('Delete Account', deleteError?.message || 'We could not delete your account right now.');
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     const status = String(verificationStatus || me?.verification_status || 'unverified').toLowerCase();
@@ -183,6 +206,9 @@ export const DealerProfileScreen: React.FC = () => {
 
                 <TouchableOpacity style={styles.logoutButton} onPress={logout}>
                     <Text style={styles.logoutText}>Logout</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteButton} onPress={deleteAccount}>
+                    <Text style={styles.deleteText}>Delete Account</Text>
                 </TouchableOpacity>
             </ScrollView>
         </DealerScreen>
@@ -366,6 +392,16 @@ const styles = StyleSheet.create({
     logoutText: {
         ...dealerTheme.typography.button,
         color: dealerTheme.colors.danger,
+    },
+    deleteButton: {
+        backgroundColor: dealerTheme.colors.danger,
+        borderRadius: dealerTheme.radius.md,
+        paddingVertical: dealerTheme.spacing.sm,
+        alignItems: 'center',
+    },
+    deleteText: {
+        ...dealerTheme.typography.button,
+        color: dealerTheme.colors.textOnPrimary,
     },
 });
 

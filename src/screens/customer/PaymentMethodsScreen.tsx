@@ -25,7 +25,7 @@ export const PaymentMethodsScreen: React.FC<Props> = ({ navigation }) => {
                     </View>
                     <Text style={styles.title}>How you can pay</Text>
                     <Text style={styles.subtitle}>
-                        Choose a payment method at checkout. Online payments are coming soon.
+                        Payments are currently Cash on Delivery only. Online payments are coming soon.
                     </Text>
                 </View>
 
@@ -55,13 +55,13 @@ export const PaymentMethodsScreen: React.FC<Props> = ({ navigation }) => {
                         </View>
                         <View style={styles.rowContent}>
                             <View style={styles.rowTitleRow}>
-                                <Text style={styles.rowTitle}>IONORA Wallet</Text>
-                                <View style={styles.availBadge}>
-                                    <Text style={styles.availText}>Available</Text>
+                                <Text style={styles.rowTitle}>Wallet Credits</Text>
+                                <View style={styles.soonBadge}>
+                                    <Text style={styles.soonText}>Credits only</Text>
                                 </View>
                             </View>
                             <Text style={styles.rowSubtitle}>
-                                Use wallet credits earned from referrals or refunds.
+                                Your account may show referral or refund credits, but new checkout is currently COD only.
                             </Text>
                         </View>
                     </View>

@@ -50,7 +50,7 @@ import { technicianTheme } from './src/theme/technicianTheme';
 import api from './src/services/api';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab   = createBottomTabNavigator();
+const Tab = createBottomTabNavigator();
 
 type AppErrorBoundaryState = {
     hasError: boolean;

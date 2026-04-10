@@ -47,6 +47,7 @@ interface TechnicianState {
     jobs: TechnicianJob[];
     jobsMeta: TechnicianJobsMeta | null;
     jobUpdates: Record<string, JobUpdate[]>;
+    actionBookingId: string | null;
     loading: TechnicianLoadingState;
     error: string | null;
 }
@@ -97,6 +98,7 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
     jobs: [],
     jobsMeta: null,
     jobUpdates: {},
+    actionBookingId: null,
     loading: initialLoadingState,
     error: null,
 
@@ -208,6 +210,7 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
             set((state) => ({
                 jobs: sortJobs(payload.jobs),
                 jobsMeta: payload.meta || null,
+                actionBookingId: null,
                 loading: { ...state.loading, jobs: false },
             }));
         } catch (error: any) {
@@ -248,22 +251,48 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
     },
 
     acceptJob: async (bookingId: string) => {
+        const snapshot = get();
+        if (!snapshot.isOnline) {
+            set({ error: 'Go online to accept jobs.' });
+            return false;
+        }
+        if (snapshot.jobs.some((job) => job.id !== bookingId && (job.status === 'assigned' || job.status === 'in_progress'))) {
+            set({ error: 'Complete your current active job before accepting a new one.' });
+            return false;
+        }
+
         set((state) => ({
             loading: { ...state.loading, action: true },
+            actionBookingId: bookingId,
             error: null,
         }));
 
         try {
             await technicianService.acceptJob(bookingId);
+            set((state) => ({
+                jobs: sortJobs(
+                    state.jobs.map((job) =>
+                        job.id === bookingId
+                            ? { ...job, status: 'assigned' }
+                            : job
+                    )
+                ),
+                actionBookingId: null,
+                loading: { ...state.loading, action: false },
+            }));
+
+            // Keep local UI snappy, then sync with server-authoritative job lists.
             const payload = await technicianService.getAvailableJobs();
             set((state) => ({
                 jobs: sortJobs(payload.jobs),
                 jobsMeta: payload.meta || null,
+                actionBookingId: null,
                 loading: { ...state.loading, action: false },
             }));
             return true;
         } catch (error: any) {
             set((state) => ({
+                actionBookingId: null,
                 loading: { ...state.loading, action: false },
                 error: extractErrorMessage(error, 'Failed to accept job.'),
             }));
@@ -274,6 +303,7 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
     rejectJob: async (bookingId: string) => {
         set((state) => ({
             loading: { ...state.loading, action: true },
+            actionBookingId: bookingId,
             error: null,
         }));
 
@@ -283,11 +313,13 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
             set((state) => ({
                 jobs: sortJobs(payload.jobs),
                 jobsMeta: payload.meta || null,
+                actionBookingId: null,
                 loading: { ...state.loading, action: false },
             }));
             return true;
         } catch (error: any) {
             set((state) => ({
+                actionBookingId: null,
                 loading: { ...state.loading, action: false },
                 error: extractErrorMessage(error, 'Failed to reject job.'),
             }));
@@ -298,6 +330,7 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
     updateJobStatus: async (bookingId: string, status: 'in_progress' | 'completed') => {
         set((state) => ({
             loading: { ...state.loading, action: true },
+            actionBookingId: bookingId,
             error: null,
         }));
 
@@ -307,11 +340,13 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
             set((state) => ({
                 jobs: sortJobs(payload.jobs),
                 jobsMeta: payload.meta || null,
+                actionBookingId: null,
                 loading: { ...state.loading, action: false },
             }));
             return true;
         } catch (error: any) {
             set((state) => ({
+                actionBookingId: null,
                 loading: { ...state.loading, action: false },
                 error: extractErrorMessage(error, 'Failed to update job status.'),
             }));
@@ -335,6 +370,7 @@ export const useTechnicianStore = create<TechnicianStore>((set, get) => ({
             jobs: [],
             jobsMeta: null,
             jobUpdates: {},
+            actionBookingId: null,
             loading: initialLoadingState,
             error: null,
         });

@@ -16,6 +16,11 @@ import { TechnicianButton, TechnicianCard, TechnicianChip, TechnicianScreen, Tec
 import { technicianTheme as T } from '../../theme/technicianTheme';
 import { useTechnicianEarnStore, useTechnicianStore } from '../../store';
 import { showTechnicianToast } from '../../utils/technicianToast';
+import {
+    TECHNICIAN_EARNING_SCHEME,
+    getTechnicianSchemeMotivation,
+    getTechnicianSchemeProgress,
+} from '../../config/technicianEarningScheme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -43,17 +48,6 @@ const commissionText = (item: TechnicianProductCommissionPreview) => {
 };
 
 // ── Level config ──────────────────────────────────────────────────────────────
-const LEVELS = [
-    { label: 'Starter',   min: 0,   max: 5,   color: '#78909C', icon: 'leaf'          as const },
-    { label: 'Rising',    min: 5,   max: 15,  color: '#26A69A', icon: 'trending-up'   as const },
-    { label: 'Pro',       min: 15,  max: 30,  color: '#0077B6', icon: 'star'          as const },
-    { label: 'Elite',     min: 30,  max: 50,  color: '#7C3AED', icon: 'diamond'       as const },
-    { label: 'Champion',  min: 50,  max: 9999, color: '#FFB000', icon: 'trophy'       as const },
-];
-
-const getLevel = (sold: number) =>
-    LEVELS.find((l) => sold >= l.min && sold < l.max) ?? LEVELS[LEVELS.length - 1];
-
 // ── Animated progress bar ─────────────────────────────────────────────────────
 const ProgressBar: React.FC<{ pct: number; color: string }> = ({ pct, color }) => {
     const anim = useRef(new Animated.Value(0)).current;
@@ -89,9 +83,12 @@ export const TechnicianEarnScreen: React.FC<Props> = ({ navigation }) => {
 
     const activeCampaign = useMemo(() => getActiveCampaign(campaigns, activeCampaignId), [campaigns, activeCampaignId]);
     const sold = progress?.soldQty ?? 0;
-    const level = getLevel(sold);
     const nextThreshold = progress?.nextThreshold ?? null;
-    const progressPct = nextThreshold && nextThreshold > 0 ? sold / nextThreshold : 1;
+    const schemeProgress = useMemo(() => getTechnicianSchemeProgress(sold), [sold]);
+    const currentLevel = schemeProgress.currentLevel;
+    const nextLevel = schemeProgress.nextLevel;
+    const progressPct = schemeProgress.normalizedProgress;
+    const motivationText = useMemo(() => getTechnicianSchemeMotivation(sold), [sold]);
 
     useFocusEffect(useCallback(() => { void refreshAll(); }, [refreshAll]));
     useFocusEffect(useCallback(() => {
@@ -151,9 +148,11 @@ export const TechnicianEarnScreen: React.FC<Props> = ({ navigation }) => {
                     <View style={styles.heroRing} />
 
                     {/* Level badge */}
-                    <View style={[styles.levelBadge, { backgroundColor: level.color + '22', borderColor: level.color + '55' }]}>
-                        <Ionicons name={level.icon} size={14} color={level.color} />
-                        <Text style={[styles.levelBadgeText, { color: level.color }]}>{level.label}</Text>
+                    <View style={[styles.levelBadge, { backgroundColor: (currentLevel?.color || T.colors.agentPrimary) + '22', borderColor: (currentLevel?.color || T.colors.agentPrimary) + '55' }]}>
+                        <Ionicons name={currentLevel?.icon || 'medal'} size={14} color={currentLevel?.color || T.colors.agentPrimary} />
+                        <Text style={[styles.levelBadgeText, { color: currentLevel?.color || T.colors.agentPrimary }]}>
+                            {(currentLevel?.label || 'Silver')} Level
+                        </Text>
                     </View>
 
                     <Text style={styles.heroLabel}>Total Earnings</Text>
@@ -190,35 +189,41 @@ export const TechnicianEarnScreen: React.FC<Props> = ({ navigation }) => {
                 {/* ── Level progress card ── */}
                 <View style={styles.levelCard}>
                     <View style={styles.levelHeader}>
-                        <View style={[styles.levelIconWrap, { backgroundColor: level.color + '18' }]}>
-                            <Ionicons name={level.icon} size={20} color={level.color} />
+                        <View style={[styles.levelIconWrap, { backgroundColor: (currentLevel?.color || T.colors.agentPrimary) + '18' }]}>
+                            <Ionicons name={currentLevel?.icon || 'medal'} size={20} color={currentLevel?.color || T.colors.agentPrimary} />
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.levelTitle}>{level.label} Level</Text>
+                            <Text style={styles.levelTitle}>{currentLevel ? `${currentLevel.label} Level` : 'Scheme Progress'}</Text>
                             <Text style={styles.levelSub}>
-                                {nextThreshold !== null
-                                    ? `${sold} / ${nextThreshold} products sold`
-                                    : `${sold} products sold — Champion!`}
+                                {nextLevel
+                                    ? `${sold} / ${nextLevel.minSales} products sold`
+                                    : `${sold} products sold - Diamond unlocked`}
                             </Text>
                         </View>
-                        {nextThreshold !== null && (
+                        {nextLevel && (
                             <Text style={styles.levelRemaining}>
-                                {nextThreshold - sold} to next
+                                {schemeProgress.remainingSales} to next
                             </Text>
                         )}
                     </View>
+                    <Text style={styles.schemeHeadline}>{motivationText}</Text>
+                    <Text style={styles.schemeSubline}>
+                        {nextLevel
+                            ? `Current commission: ${currentLevel?.commissionPercent || 0}% | Next unlock: ${nextLevel.commissionPercent}%`
+                            : 'Current commission: 40% | Diamond level unlocked'}
+                    </Text>
 
                     {/* Level track */}
                     <View style={styles.levelTrack}>
-                        {LEVELS.slice(0, -1).map((l, i) => {
-                            const active = sold >= l.min;
+                        {TECHNICIAN_EARNING_SCHEME.map((l, i) => {
+                            const active = sold >= l.minSales;
                             return (
                                 <React.Fragment key={l.label}>
                                     <View style={[styles.levelDot, { backgroundColor: active ? l.color : T.colors.border }]}>
                                         {active && <Ionicons name="checkmark" size={10} color="#fff" />}
                                     </View>
-                                    {i < LEVELS.length - 2 && (
-                                        <View style={[styles.levelConnector, { backgroundColor: sold >= LEVELS[i + 1].min ? LEVELS[i + 1].color : T.colors.border }]} />
+                                    {i < TECHNICIAN_EARNING_SCHEME.length - 1 && (
+                                        <View style={[styles.levelConnector, { backgroundColor: sold >= TECHNICIAN_EARNING_SCHEME[i + 1].minSales ? TECHNICIAN_EARNING_SCHEME[i + 1].color : T.colors.border }]} />
                                     )}
                                 </React.Fragment>
                             );
@@ -226,8 +231,18 @@ export const TechnicianEarnScreen: React.FC<Props> = ({ navigation }) => {
                     </View>
 
                     <View style={styles.levelLabels}>
-                        {LEVELS.slice(0, -1).map((l) => (
-                            <Text key={l.label} style={[styles.levelDotLabel, sold >= l.min && { color: l.color }]}>{l.label}</Text>
+                        {TECHNICIAN_EARNING_SCHEME.map((l) => (
+                            <Text key={l.label} style={[styles.levelDotLabel, sold >= l.minSales && { color: l.color }]}>{l.label}</Text>
+                        ))}
+                    </View>
+
+                    <View style={styles.schemeGrid}>
+                        {TECHNICIAN_EARNING_SCHEME.map((levelItem) => (
+                            <View key={levelItem.id} style={styles.schemeTile}>
+                                <Text style={styles.schemeTileTitle}>{levelItem.label}</Text>
+                                <Text style={styles.schemeTileMeta}>{levelItem.minSales} sales</Text>
+                                <Text style={[styles.schemeTilePct, { color: levelItem.color }]}>{levelItem.commissionPercent}% commission</Text>
+                            </View>
                         ))}
                     </View>
 
@@ -264,14 +279,12 @@ export const TechnicianEarnScreen: React.FC<Props> = ({ navigation }) => {
                         >
                             <View style={styles.campaignProgressHeader}>
                                 <Text style={styles.campaignProgressLabel}>Campaign Progress</Text>
-                                <Text style={styles.campaignProgressPct}>
-                                    {nextThreshold ? `${Math.round(progressPct * 100)}%` : '100%'}
-                                </Text>
+                                <Text style={styles.campaignProgressPct}>{`${Math.round(progressPct * 100)}%`}</Text>
                             </View>
                             <ProgressBar pct={progressPct} color={T.colors.agentPrimary} />
                             <View style={styles.campaignProgressMeta}>
                                 <Text style={styles.campaignMetaText}>Sold: {sold}</Text>
-                                <Text style={styles.campaignMetaText}>Next: {nextThreshold ?? '—'}</Text>
+                                <Text style={styles.campaignMetaText}>Next: {nextThreshold ?? nextLevel?.minSales ?? '—'}</Text>
                             </View>
                         </LinearGradient>
 
@@ -379,6 +392,8 @@ const styles = StyleSheet.create({
     levelTitle: { fontSize: 16, fontWeight: '700', color: T.colors.textPrimary },
     levelSub: { fontSize: 12, color: T.colors.textSecondary, marginTop: 2 },
     levelRemaining: { fontSize: 12, fontWeight: '700', color: T.colors.agentPrimary },
+    schemeHeadline: { fontSize: 14, fontWeight: '700', color: T.colors.textPrimary, marginBottom: 4 },
+    schemeSubline: { fontSize: 12, color: T.colors.textSecondary, marginBottom: T.spacing.md },
     levelTrack: { flexDirection: 'row', alignItems: 'center', marginBottom: T.spacing.xs },
     levelDot: {
         width: 24, height: 24, borderRadius: 12,
@@ -387,6 +402,19 @@ const styles = StyleSheet.create({
     levelConnector: { flex: 1, height: 3, borderRadius: 2 },
     levelLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: T.spacing.md },
     levelDotLabel: { fontSize: 10, fontWeight: '600', color: T.colors.agentMuted, textAlign: 'center', flex: 1 },
+    schemeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: T.spacing.sm, marginBottom: T.spacing.md },
+    schemeTile: {
+        width: ((W - (T.spacing.lg * 2) - T.spacing.lg - T.spacing.sm) / 2),
+        borderRadius: T.radius.md,
+        borderWidth: 1,
+        borderColor: T.colors.border,
+        backgroundColor: '#FCFAF4',
+        paddingVertical: T.spacing.sm,
+        paddingHorizontal: T.spacing.sm,
+    },
+    schemeTileTitle: { fontSize: 12, fontWeight: '700', color: T.colors.textPrimary },
+    schemeTileMeta: { fontSize: 11, color: T.colors.textSecondary, marginTop: 2 },
+    schemeTilePct: { fontSize: 12, fontWeight: '800', marginTop: 4 },
     withdrawRow: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
         backgroundColor: '#F7F4EE', borderRadius: T.radius.md, padding: T.spacing.sm,

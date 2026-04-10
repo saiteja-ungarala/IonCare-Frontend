@@ -63,12 +63,14 @@ const statusTone = (status: string): 'default' | 'success' | 'warning' | 'danger
 export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navigation }) => {
     const [activeFilter, setActiveFilter] = useState<FilterType>('all');
     const [refreshing, setRefreshing] = useState(false);
+    const [retryAcceptJobId, setRetryAcceptJobId] = useState<string | null>(null);
 
     const {
         me,
         isOnline,
         jobs,
         jobsMeta,
+        actionBookingId,
         loading,
         error,
         fetchMe,
@@ -190,8 +192,12 @@ export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navi
     }, [activeCampaign, progress, nextTier]);
 
     const handleAccept = async (bookingId: string) => {
+        setRetryAcceptJobId(null);
         const ok = await accept(bookingId);
-        if (!ok) return;
+        if (!ok) {
+            setRetryAcceptJobId(bookingId);
+            return;
+        }
         showTechnicianToast('Job accepted');
         await fetchJobs();
         navigation.navigate('TechnicianActiveJob');
@@ -237,12 +243,23 @@ export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navi
                         style={styles.actionBtn}
                     />
                     <TechnicianButton
-                        title="Accept"
+                        title={actionBookingId === item.id && loading.action ? 'Accepting...' : 'Accept'}
                         onPress={() => handleAccept(item.id)}
-                        disabled={loading.action || hasActiveJob}
+                        loading={actionBookingId === item.id && loading.action}
+                        disabled={
+                            loading.action ||
+                            !isOnline ||
+                            hasActiveJob
+                        }
                         style={styles.actionBtn}
                     />
                 </View>
+                {!isOnline && (
+                    <Text style={styles.guardText}>Go online to accept this job.</Text>
+                )}
+                {hasActiveJob && item.status !== 'assigned' && item.status !== 'in_progress' && (
+                    <Text style={styles.guardText}>Finish your current active job before accepting another.</Text>
+                )}
             </TechnicianCard>
         );
     };
@@ -301,6 +318,26 @@ export const TechnicianJobsScreen: React.FC<TechnicianJobsScreenProps> = ({ navi
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={technicianTheme.colors.agentPrimary} />
             </TouchableOpacity>
+
+            {retryAcceptJobId && (
+                <TechnicianCard style={styles.retryCard}>
+                    <Text style={styles.retryTitle}>Accept failed. Retry the same job?</Text>
+                    <View style={styles.retryActions}>
+                        <TechnicianButton
+                            title="Retry Accept"
+                            onPress={() => handleAccept(retryAcceptJobId)}
+                            disabled={loading.action}
+                            style={styles.actionBtn}
+                        />
+                        <TechnicianButton
+                            title="Dismiss"
+                            variant="secondary"
+                            onPress={() => setRetryAcceptJobId(null)}
+                            style={styles.actionBtn}
+                        />
+                    </View>
+                </TechnicianCard>
+            )}
 
             <FlatList
                 data={filteredJobs}
@@ -452,6 +489,27 @@ const styles = StyleSheet.create({
     },
     actionBtn: {
         flex: 1,
+    },
+    guardText: {
+        ...technicianTheme.typography.caption,
+        color: '#8A5D00',
+        marginTop: technicianTheme.spacing.xs,
+    },
+    retryCard: {
+        marginTop: technicianTheme.spacing.md,
+        marginHorizontal: technicianTheme.spacing.lg,
+        gap: technicianTheme.spacing.sm,
+        borderColor: '#F6D485',
+        backgroundColor: '#FFF8E8',
+    },
+    retryTitle: {
+        ...technicianTheme.typography.bodySmall,
+        color: technicianTheme.colors.textPrimary,
+        fontWeight: '600',
+    },
+    retryActions: {
+        flexDirection: 'row',
+        gap: technicianTheme.spacing.sm,
     },
     emptyCard: {
         marginTop: technicianTheme.spacing.md,

@@ -106,7 +106,7 @@ export const resolveProductImageSource = (rawValue: string | null | undefined): 
     });
 };
 
-const PRODUCT_PLACEHOLDER: ImageSourcePropType = require('../../assets/icon3.png');
+const PRODUCT_PLACEHOLDER: ImageSourcePropType = require('../../assets/ionora_logo.jpg');
 
 /**
  * Like resolveProductImageSource but always returns a source — never null.

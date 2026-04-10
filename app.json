@@ -4,10 +4,10 @@
     "slug": "ioncare",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/ionora-mark.png",
+    "icon": "./assets/splash-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/ionora-mark.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -27,7 +27,7 @@
       "package": "com.ioncare.app",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/ionora-mark.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [

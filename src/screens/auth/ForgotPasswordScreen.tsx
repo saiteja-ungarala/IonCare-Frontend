@@ -1,5 +1,4 @@
-// Forgot Password Screen - Modern Viral India Aesthetic
-// Clean, minimal, high contrast
+// Forgot Password Screen - Premium Glass Aesthetic
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -11,10 +10,13 @@ import {
     KeyboardAvoidingView,
     Platform,
     Alert,
+    ImageBackground,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors, spacing, typography, shadows } from '../../theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, typography, shadows, borderRadius } from '../../theme/theme';
+import { customerColors } from '../../theme/customerTheme';
 import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
 import { useAuthStore } from '../../store';
@@ -25,10 +27,7 @@ type ForgotPasswordScreenProps = {
 };
 
 const blurWebActiveElement = () => {
-    if (Platform.OS !== 'web') {
-        return;
-    }
-
+    if (Platform.OS !== 'web') return;
     const activeElement = document.activeElement as HTMLElement | null;
     activeElement?.blur?.();
 };
@@ -50,7 +49,11 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
         fieldErrors,
         clearError,
         clearFieldError,
+        selectedRole
     } = useAuthStore();
+
+    const isTechnician = selectedRole === 'technician';
+    const activeThemeColor = isTechnician ? colors.accent : customerColors.primary;
 
     useEffect(() => {
         clearError();
@@ -62,18 +65,10 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
     };
 
     const clearEmailFieldState = () => {
-        if (localErrorMessage) {
-            setLocalErrorMessage(null);
-        }
-        if (errorMessage) {
-            clearError();
-        }
-        if (fieldErrors.email) {
-            clearFieldError('email');
-        }
-        if (clientFieldErrors.email) {
-            setClientFieldErrors({});
-        }
+        if (localErrorMessage) setLocalErrorMessage(null);
+        if (errorMessage) clearError();
+        if (fieldErrors.email) clearFieldError('email');
+        if (clientFieldErrors.email) setClientFieldErrors({});
     };
 
     const validateForm = (): boolean => {
@@ -97,9 +92,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
         setLocalErrorMessage(null);
         clearError();
 
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
 
         const success = await forgotPassword(email.trim());
         if (success) {
@@ -112,76 +105,102 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navi
         }
     };
 
+    const getBackgroundImage = () => (
+        isTechnician
+            ? require('../../../assets/technicain-login.jpg')
+            : require('../../../assets/customer-login.png')
+    );
+
     return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                style={styles.keyboardView}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View style={styles.header}>
-                        <TouchableOpacity
-                            style={styles.backButton}
-                            onPress={() => goBackWithBlur(navigation)}
+        <View style={styles.container}>
+            <ImageBackground source={getBackgroundImage()} style={styles.bgImage} resizeMode="cover">
+                <LinearGradient
+                    colors={isTechnician 
+                        ? ['rgba(15, 10, 0, 0.65)', 'rgba(34, 25, 2, 0.82)', 'rgba(25, 20, 3, 0.98)']
+                        : ['rgba(3, 10, 15, 0.65)', 'rgba(2, 28, 34, 0.75)', 'rgba(3, 20, 25, 0.96)']
+                    }
+                    locations={[0, 0.4, 1]}
+                    style={StyleSheet.absoluteFill}
+                />
+                <SafeAreaView style={styles.safeArea}>
+                    <KeyboardAvoidingView
+                        style={styles.keyboardView}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    >
+                        <ScrollView
+                            contentContainerStyle={styles.scrollContent}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
                         >
-                            <Ionicons name="chevron-back" size={28} color={colors.text} />
-                        </TouchableOpacity>
-                    </View>
+                            <View style={styles.header}>
+                                <TouchableOpacity
+                                    style={styles.backButton}
+                                    onPress={() => goBackWithBlur(navigation)}
+                                >
+                                    <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+                                </TouchableOpacity>
+                            </View>
 
-                    <View style={styles.content}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="key-outline" size={48} color={colors.primary} />
-                        </View>
-                        <Text style={styles.title}>Forgot Password?</Text>
-                        <Text style={styles.subtitle}>
-                            No worries! Enter your email and we'll send you reset instructions
-                        </Text>
+                            <View style={styles.content}>
+                                <View style={[styles.glassContent, { borderColor: isTechnician ? 'rgba(255, 176, 0, 0.3)' : 'rgba(0, 194, 179, 0.3)' }]}>
+                                    <View style={[styles.iconContainer, { backgroundColor: isTechnician ? 'rgba(255, 176, 0, 0.15)' : 'rgba(0, 194, 179, 0.15)' }]}>
+                                        <Ionicons name="key" size={36} color={activeThemeColor} />
+                                    </View>
+                                    <Text style={styles.title}>Recovery</Text>
+                                    <Text style={styles.subtitle}>
+                                        Enter your email and we'll securely send you reset instructions.
+                                    </Text>
 
-                        <View style={styles.form}>
-                            <AuthErrorBanner
-                                message={localErrorMessage || (shouldHideBannerForInlineErrors ? null : errorMessage)}
-                                onClose={dismissErrorBanner}
-                            />
+                                    <View style={styles.form}>
+                                        <AuthErrorBanner
+                                            message={localErrorMessage || (shouldHideBannerForInlineErrors ? null : errorMessage)}
+                                            onClose={dismissErrorBanner}
+                                        />
 
-                            <Input
-                                label="Email"
-                                placeholder="Enter your registered email"
-                                value={email}
-                                onChangeText={(value) => {
-                                    setEmail(value);
-                                    clearEmailFieldState();
-                                }}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                leftIcon="mail-outline"
-                                editable={!isSubmitted}
-                                error={clientFieldErrors.email || fieldErrors.email}
-                            />
+                                        <Input
+                                            label="Email"
+                                            placeholder="Enter your registered email"
+                                            value={email}
+                                            onChangeText={(value) => {
+                                                setEmail(value);
+                                                clearEmailFieldState();
+                                            }}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                            leftIcon="mail-outline"
+                                            editable={!isSubmitted}
+                                            error={clientFieldErrors.email || fieldErrors.email}
+                                            inputContainerStyle={styles.transparentInput}
+                                            labelStyle={{ color: '#FFFFFF' }}
+                                            style={{ color: '#FFFFFF' }}
+                                            iconColor="#FFFFFF"
+                                            placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                                        />
 
-                            <Button
-                                title={isSubmitted ? 'Request Sent' : 'Send Reset Link'}
-                                onPress={handleSubmit}
-                                loading={isLoading}
-                                fullWidth
-                                disabled={isSubmitted || isLoading}
-                            />
+                                        <Button
+                                            title={isSubmitted ? 'Request Sent' : 'Send Reset Link'}
+                                            onPress={handleSubmit}
+                                            loading={isLoading}
+                                            fullWidth
+                                            disabled={isSubmitted || isLoading}
+                                            style={{ backgroundColor: activeThemeColor, shadowColor: activeThemeColor, borderRadius: borderRadius.full, marginTop: spacing.md }}
+                                        />
 
-                            <TouchableOpacity
-                                style={styles.backToLogin}
-                                onPress={() => goBackWithBlur(navigation)}
-                            >
-                                <Ionicons name="chevron-back" size={20} color={colors.primary} />
-                                <Text style={styles.backToLoginText}>Back to Login</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                                        <TouchableOpacity
+                                            style={styles.backToLogin}
+                                            onPress={() => goBackWithBlur(navigation)}
+                                        >
+                                            <Ionicons name="chevron-back" size={16} color={activeThemeColor} />
+                                            <Text style={[styles.backToLoginText, { color: activeThemeColor }]}>Back to Login</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </ScrollView>
+                    </KeyboardAvoidingView>
+                </SafeAreaView>
+            </ImageBackground>
+        </View>
     );
 };
 
@@ -189,6 +208,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background,
+    },
+    bgImage: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    safeArea: {
+        flex: 1,
     },
     keyboardView: {
         flex: 1,
@@ -202,40 +229,62 @@ const styles = StyleSheet.create({
         paddingBottom: spacing.lg,
     },
     backButton: {
-        width: 32,
-        height: 40,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
         marginLeft: -spacing.sm,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
     },
     content: {
         flex: 1,
-        paddingHorizontal: spacing.lg,
+        paddingHorizontal: spacing.xl,
+        justifyContent: 'center',
+        paddingBottom: 40,
+    },
+    glassContent: {
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        borderRadius: 32,
+        padding: spacing.xl,
+        borderWidth: 1,
+        ...shadows.lg,
     },
     iconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 20,
-        backgroundColor: colors.primaryLight,
+        width: 72,
+        height: 72,
+        borderRadius: 36,
         alignItems: 'center',
         justifyContent: 'center',
-        alignSelf: 'center',
-        marginBottom: spacing.lg,
+        alignSelf: 'flex-start',
+        marginBottom: spacing.xl,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     title: {
-        ...typography.title,
-        color: colors.text,
-        textAlign: 'center',
+        ...typography.h2,
+        color: '#FFFFFF',
         marginBottom: spacing.xs,
+        fontWeight: 'bold',
     },
     subtitle: {
         ...typography.body,
-        color: colors.textSecondary,
-        textAlign: 'center',
-        marginBottom: spacing.xl,
+        color: 'rgba(255, 255, 255, 0.7)',
+        marginBottom: spacing.xxl,
+        lineHeight: 24,
     },
     form: {
-        marginTop: spacing.lg,
+        marginTop: spacing.sm,
+    },
+    transparentInput: {
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderWidth: 1,
+        elevation: 0,
+        shadowColor: 'transparent',
+        shadowOpacity: 0,
     },
     backToLogin: {
         flexDirection: 'row',
@@ -243,10 +292,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: spacing.xl,
         gap: spacing.xs,
+        paddingVertical: spacing.md,
     },
     backToLoginText: {
-        ...typography.body,
-        color: colors.primary,
+        ...typography.bodySmall,
         fontWeight: '600',
     },
 });

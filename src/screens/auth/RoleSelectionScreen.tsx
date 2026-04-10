@@ -118,7 +118,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
         const nextFieldErrors: Record<string, string> = {};
         if (!email.trim()) nextFieldErrors.email = 'Email is required';
         else if (!isValidEmail(email.trim())) nextFieldErrors.email = 'Enter a valid email address';
-        
+
         if (!password) nextFieldErrors.password = 'Password is required';
         else if (password.length < 6) nextFieldErrors.password = 'Password must be at least 6 characters';
 
@@ -177,10 +177,32 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
         extrapolate: 'clamp'
     });
 
+    const [tabWidth, setTabWidth] = useState(0);
+    const tabAnim = useRef(new Animated.Value(currentRole === 'customer' ? 0 : 1)).current;
+
+    useEffect(() => {
+        Animated.spring(tabAnim, {
+            toValue: currentRole === 'customer' ? 0 : 1,
+            friction: 8,
+            tension: 50,
+            useNativeDriver: false,
+        }).start();
+    }, [currentRole, tabAnim]);
+
+    const tabIndicatorBg = tabAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [customerColors.primary, colors.accent]
+    });
+
+    const tabTranslateX = tabAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, tabWidth]
+    });
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-            
+
             {/* Backgrounds */}
             <Animated.View style={[StyleSheet.absoluteFill, { opacity: customerBgOp }]}>
                 <ImageBackground source={require('../../../assets/customer-login.png')} style={styles.bgImage} resizeMode="cover">
@@ -207,24 +229,6 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                     <View style={styles.logoContainer}>
                         <Image source={require('../../../assets/icon.png')} style={styles.smallLogo} resizeMode="contain" />
                     </View>
-                    
-                    <View style={styles.roleSwitcher}>
-                        <TouchableOpacity 
-                            style={[styles.roleSwitchBtn, !isTechnician && styles.roleSwitchBtnActiveCus]} 
-                            onPress={() => handleRoleSelect('customer')}
-                            activeOpacity={0.8}
-                        >
-                            <Ionicons name="sparkles" size={20} color={!isTechnician ? '#FFFFFF' : 'rgba(255,255,255,0.4)'} />
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[styles.roleSwitchBtn, isTechnician && styles.roleSwitchBtnActiveTech]} 
-                            onPress={() => handleRoleSelect('technician')}
-                            activeOpacity={0.8}
-                        >
-                            <Ionicons name="construct" size={20} color={isTechnician ? '#FFFFFF' : 'rgba(255,255,255,0.4)'} />
-                        </TouchableOpacity>
-                    </View>
                 </View>
 
                 <KeyboardAvoidingView
@@ -236,19 +240,49 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
                     >
-                            <Animated.View 
-                                style={[
-                                    styles.glassContent, 
-                                    { 
-                                        borderColor: cardBorderColor, 
-                                        opacity: pageAnim,
-                                        transform: [
-                                            { scale: pageAnim },
-                                            { scale: cardScale }
-                                        ] 
-                                    } as any as StyleProp<ViewStyle>
-                                ]}
-                            >
+                        <Animated.View
+                            style={[
+                                styles.glassContent,
+                                {
+                                    borderColor: cardBorderColor,
+                                    opacity: pageAnim,
+                                    transform: [
+                                        { scale: pageAnim },
+                                        { scale: cardScale }
+                                    ]
+                                } as any as StyleProp<ViewStyle>
+                            ]}
+                        >
+                            <View style={styles.tabContainer} onLayout={(e) => setTabWidth((e.nativeEvent.layout.width - 12) / 2)}>
+                                {tabWidth > 0 && (
+                                    <Animated.View style={[
+                                        styles.tabIndicator,
+                                        { 
+                                            width: tabWidth, 
+                                            transform: [{ translateX: tabTranslateX }],
+                                            backgroundColor: tabIndicatorBg
+                                        }
+                                    ]} />
+                                )}
+                                <TouchableOpacity
+                                    style={styles.tabButton}
+                                    onPress={() => handleRoleSelect('customer')}
+                                    activeOpacity={0.8}
+                                >
+                                    <Ionicons name="sparkles" size={16} color={!isTechnician ? '#FFFFFF' : 'rgba(255,255,255,0.6)'} />
+                                    <Text style={[styles.tabText, !isTechnician && { color: '#FFFFFF', fontWeight: 'bold' }]}>Customer</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.tabButton}
+                                    onPress={() => handleRoleSelect('technician')}
+                                    activeOpacity={0.8}
+                                >
+                                    <Ionicons name="construct" size={16} color={isTechnician ? '#FFFFFF' : 'rgba(255,255,255,0.6)'} />
+                                    <Text style={[styles.tabText, isTechnician && { color: '#FFFFFF', fontWeight: 'bold' }]}>Technician</Text>
+                                </TouchableOpacity>
+                            </View>
+
                             <View style={styles.titleWrapper}>
                                 <Animated.View style={[StyleSheet.absoluteFill, { opacity: customerCardOp, transform: [{ translateX: customerTextTranslateX }] }]} pointerEvents="none">
                                     <Text style={[styles.title, { color: '#FFFFFF' }]}>Welcome Back</Text>
@@ -322,7 +356,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                                     style={{ backgroundColor: activeThemeColor, shadowColor: activeThemeColor, borderRadius: borderRadius.full, marginTop: spacing.md }}
                                 />
                             </View>
-                            
+
                             <View style={styles.footerRow}>
                                 <Text style={[styles.footerText, isTechnician && { color: 'rgba(255, 255, 255, 0.6)' }]}>Don't have an account? </Text>
                                 <TouchableOpacity onPress={() => navigateWithBlur(() => navigation.navigate('Signup'))}>
@@ -407,6 +441,38 @@ const styles = StyleSheet.create({
         padding: spacing.xl,
         borderWidth: 1,
         ...shadows.lg,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(0, 0, 0, 0.25)',
+        borderRadius: 16,
+        padding: 6,
+        marginBottom: spacing.xl,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        position: 'relative',
+    },
+    tabIndicator: {
+        position: 'absolute',
+        top: 6,
+        bottom: 6,
+        left: 6,
+        borderRadius: 12,
+        ...shadows.md,
+    },
+    tabButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        borderRadius: 12,
+        gap: 6,
+    },
+    tabText: {
+        ...typography.bodySmall,
+        color: 'rgba(255, 255, 255, 0.6)',
+        fontWeight: '600',
     },
     titleWrapper: {
         height: 80,

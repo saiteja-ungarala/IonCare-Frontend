@@ -129,6 +129,11 @@ export interface TechnicianProfile {
     base_lat: number | null;
     base_lng: number | null;
     last_online_at: string | null;
+    referral_code?: string | null;
+    rating_avg?: number;
+    rating_count?: number;
+    completed_jobs?: number;
+    active_jobs?: number;
 }
 
 export interface TechnicianKycDocument {

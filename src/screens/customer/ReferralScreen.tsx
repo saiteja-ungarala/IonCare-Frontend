@@ -33,9 +33,9 @@ interface ReferralListItem {
 }
 
 interface ReferralApiResponse {
-    total_referrals: number;
-    total_earned: number;
-    referrals: ReferralListItem[];
+    total_referrals?: number;
+    total_earned?: number;
+    referrals?: ReferralListItem[];
 }
 
 interface ReferralSummary {
@@ -47,6 +47,17 @@ interface ReferralSummary {
         status: ReferralStatus;
         rewardAmount: number;
     }>;
+}
+
+interface WalletTransactionLike {
+    id?: number | string;
+    txn_type?: string;
+    type?: string;
+    source?: string;
+    amount?: number | string;
+    description?: string;
+    created_at?: string;
+    date?: string;
 }
 
 const rewardTiers = [
@@ -87,9 +98,11 @@ const extractInitials = (value: string): string =>
         .map((part) => part[0]?.toUpperCase() || '')
         .join('') || 'NA';
 
-const mapReferralResponse = (payload: ReferralApiResponse): ReferralSummary => {
-    const referrals = Array.isArray(payload.referrals)
-        ? payload.referrals.map((item) => ({
+const mapReferralResponse = (payload?: ReferralApiResponse | null): ReferralSummary => {
+    const safePayload = payload || {};
+
+    const referrals = Array.isArray(safePayload.referrals)
+        ? safePayload.referrals.map((item) => ({
             userName: item.user_name || 'Unnamed User',
             status: normalizeStatus(item.status),
             rewardAmount: Number(item.reward_amount || 0),
@@ -97,10 +110,69 @@ const mapReferralResponse = (payload: ReferralApiResponse): ReferralSummary => {
         : [];
 
     return {
-        totalReferrals: Number(payload.total_referrals || referrals.length),
-        totalEarned: Number(payload.total_earned || 0),
+        totalReferrals: Number(safePayload.total_referrals || referrals.length),
+        totalEarned: Number(safePayload.total_earned || 0),
         pendingReferrals: referrals.filter((item) => item.status === 'pending').length,
         referrals,
+    };
+};
+
+const extractNameFromReferralDescription = (description: string): string => {
+    const normalized = description.trim();
+    if (!normalized) {
+        return 'Referral reward';
+    }
+
+    const patterns = [
+        /referral bonus\s*-\s*([a-zA-Z\s.'-]+?)\s+(joined|using|placed)/i,
+        /from\s+([a-zA-Z\s.'-]+?)$/i,
+    ];
+
+    for (const pattern of patterns) {
+        const match = normalized.match(pattern);
+        const name = match?.[1]?.trim();
+        if (name) {
+            return name;
+        }
+    }
+
+    return 'Referral reward';
+};
+
+const mapWalletFallbackResponse = (payload: unknown): ReferralSummary => {
+    const rawList = Array.isArray(payload)
+        ? payload
+        : Array.isArray((payload as { transactions?: unknown[] })?.transactions)
+            ? ((payload as { transactions: unknown[] }).transactions)
+            : [];
+
+    const referralItems = rawList
+        .map((row) => row as WalletTransactionLike)
+        .filter((item) => {
+            const source = String(item.source || '').toLowerCase();
+            const type = String(item.txn_type || item.type || '').toLowerCase();
+            const description = String(item.description || '');
+            const referralBySource = source.includes('referral');
+            const referralByDescription = /referral/i.test(description);
+            const isCredit = type === 'credit' || type.length === 0;
+            return isCredit && (referralBySource || referralByDescription);
+        })
+        .map((item) => {
+            const description = String(item.description || '').trim();
+            return {
+                userName: extractNameFromReferralDescription(description),
+                status: 'credited' as const,
+                rewardAmount: Number(item.amount || 0),
+            };
+        });
+
+    const totalEarned = referralItems.reduce((sum, item) => sum + Number(item.rewardAmount || 0), 0);
+
+    return {
+        totalReferrals: referralItems.length,
+        totalEarned,
+        pendingReferrals: 0,
+        referrals: referralItems,
     };
 };
 
@@ -133,9 +205,25 @@ export const ReferralScreen: React.FC = () => {
         try {
             setErrorMessage('');
             const response = await api.get('/user/referrals');
-            const data = response?.data?.data ?? response?.data;
-            setSummary(mapReferralResponse(data as ReferralApiResponse));
+            const data = response?.data?.data ?? response?.data?.result ?? null;
+            setSummary(mapReferralResponse(data as ReferralApiResponse | null));
         } catch (error) {
+            const statusCode = (error as { response?: { status?: number } })?.response?.status;
+
+            if (statusCode === 404) {
+                try {
+                    const fallbackResponse = await api.get('/wallet/transactions', {
+                        params: { page: 1, pageSize: 100 },
+                    });
+                    const fallbackData = fallbackResponse?.data?.data ?? fallbackResponse?.data ?? [];
+                    setSummary(mapWalletFallbackResponse(fallbackData));
+                    setErrorMessage('');
+                    return;
+                } catch (fallbackError) {
+                    console.warn('[ReferralScreen] Fallback referral load failed:', fallbackError);
+                }
+            }
+
             console.warn('[ReferralScreen] Failed to load referrals:', error);
             setErrorMessage('Unable to load referral activity right now.');
         } finally {

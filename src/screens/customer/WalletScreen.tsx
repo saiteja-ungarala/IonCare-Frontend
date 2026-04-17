@@ -129,7 +129,7 @@ export const WalletScreen: React.FC = () => {
                     {/* ── Referral card ── */}
                     <TouchableOpacity
                         activeOpacity={0.88}
-                        onPress={() => navigation.navigate('Profile')}
+                        onPress={() => navigation.navigate('Referral')}
                         style={styles.referralCard}
                     >
                         <LinearGradient

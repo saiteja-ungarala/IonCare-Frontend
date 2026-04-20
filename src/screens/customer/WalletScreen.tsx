@@ -143,7 +143,7 @@ export const WalletScreen: React.FC = () => {
                                 </View>
                                 <View>
                                     <Text style={styles.referralTitle}>Refer & Earn</Text>
-                                    <Text style={styles.referralSub}>₹5,000 per referral</Text>
+                                    <Text style={styles.referralSub}>10% direct · 5% second level</Text>
                                 </View>
                             </View>
                             <View style={styles.referralCodePill}>

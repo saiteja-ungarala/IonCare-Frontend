@@ -159,6 +159,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         ? { source: getBackgroundImage(), style: styles.backgroundImage, resizeMode: 'cover' as const }
         : { style: styles.container };
 
+    const handleBack = () => {
+        navigateWithBlur(() => {
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'RoleSelection' }],
+            });
+        });
+    };
+
     return (
         <Wrapper {...wrapperProps}>
             {isCustomLogin && <View style={styles.overlay} />}
@@ -175,7 +184,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         <View style={styles.header}>
                             <TouchableOpacity
                                 style={[styles.backButton, isCustomLogin && styles.glassButton]}
-                                onPress={() => navigateWithBlur(() => navigation.goBack())}
+                                onPress={handleBack}
                             >
                                 <Ionicons name="chevron-back" size={28} color={colors.text} />
                             </TouchableOpacity>

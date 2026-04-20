@@ -289,6 +289,16 @@ export const useCartStore = create<CartStore>((set, get) => ({
             set({ items, ...totals, isLoading: false });
             await get().fetchCart();
         } catch (error: any) {
+            if (error?.response?.status === 404) {
+                // If the item was already removed on the server, sync local state from backend
+                // and treat the delete as effectively successful.
+                await get().fetchCart();
+                const itemStillExists = get().items.some((item) => item.id === cartItemId);
+                if (!itemStillExists) {
+                    set({ isLoading: false, error: null });
+                    return;
+                }
+            }
             console.error('[CartStore] removeCartItem error:', error);
             set({ isLoading: false, error: error.response?.data?.message || error.message });
             throw error;

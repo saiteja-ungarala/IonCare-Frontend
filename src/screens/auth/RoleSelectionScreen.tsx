@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     Animated,
-    Dimensions,
     KeyboardAvoidingView,
     ScrollView,
     Platform,
@@ -24,10 +23,8 @@ import { customerColors } from '../../theme/customerTheme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store';
 import { UserRole } from '../../models/types';
-import { AuthErrorBanner, Button, Input, FadeInView } from '../../components';
+import { AuthErrorBanner, Button, Input } from '../../components';
 import { isValidEmail } from '../../utils/errorMapper';
-
-const { width } = Dimensions.get('window');
 
 const blurWebActiveElement = () => {
     if (Platform.OS !== 'web') return;
@@ -154,26 +151,45 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
 
     const activeThemeColor = currentRole === 'technician' ? colors.accent : customerColors.primary;
     const isTechnician = currentRole === 'technician';
+    const roleBadgeLabel = isTechnician ? 'Technician Workspace' : 'Customer Care Portal';
+    const primaryButtonLabel = isTechnician ? 'Continue as Technician' : 'Continue as Customer';
 
     // Interpolations
     const customerBgOp = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
     const technicianBgOp = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
 
-    const customerCardOp = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
-    const technicianCardOp = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
-
-    const customerTextTranslateX = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -width * 0.3] });
-    const technicianTextTranslateX = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [width * 0.3, 0] });
+    const customerBgScale = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.02] });
+    const technicianBgScale = shiftAnim.interpolate({ inputRange: [0, 1], outputRange: [1.02, 1] });
 
     const cardBorderColor = shiftAnim.interpolate({
         inputRange: [0, 1],
         outputRange: ['rgba(0, 194, 179, 0.5)', 'rgba(255, 176, 0, 0.5)'],
         extrapolate: 'clamp'
     });
+    const roleBadgeBackground = shiftAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['rgba(0, 194, 179, 0.12)', 'rgba(255, 176, 0, 0.14)'],
+        extrapolate: 'clamp',
+    });
+    const roleBadgeBorder = shiftAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['rgba(0, 194, 179, 0.3)', 'rgba(255, 176, 0, 0.34)'],
+        extrapolate: 'clamp',
+    });
+    const customerOrbOpacity = shiftAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.22, 0],
+        extrapolate: 'clamp',
+    });
+    const technicianOrbOpacity = shiftAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 0.2],
+        extrapolate: 'clamp',
+    });
 
     const cardScale = shiftAnim.interpolate({
         inputRange: [0, 0.5, 1],
-        outputRange: [1, 0.98, 1],
+        outputRange: [1, 0.992, 1],
         extrapolate: 'clamp'
     });
 
@@ -204,7 +220,15 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
             {/* Backgrounds */}
-            <Animated.View style={[StyleSheet.absoluteFill, { opacity: customerBgOp }]}>
+            <Animated.View
+                style={[
+                    StyleSheet.absoluteFill,
+                    {
+                        opacity: customerBgOp,
+                        transform: [{ scale: customerBgScale }],
+                    },
+                ]}
+            >
                 <ImageBackground source={require('../../../assets/customer-login.png')} style={styles.bgImage} resizeMode="cover">
                     <LinearGradient
                         colors={['rgba(3, 10, 15, 0.65)', 'rgba(2, 28, 34, 0.75)', 'rgba(3, 20, 25, 0.96)']}
@@ -214,7 +238,15 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                 </ImageBackground>
             </Animated.View>
 
-            <Animated.View style={[StyleSheet.absoluteFill, { opacity: technicianBgOp }]}>
+            <Animated.View
+                style={[
+                    StyleSheet.absoluteFill,
+                    {
+                        opacity: technicianBgOp,
+                        transform: [{ scale: technicianBgScale }],
+                    },
+                ]}
+            >
                 <ImageBackground source={require('../../../assets/technicain-login.jpg')} style={styles.bgImage} resizeMode="cover">
                     <LinearGradient
                         colors={['rgba(15, 10, 0, 0.65)', 'rgba(34, 25, 2, 0.82)', 'rgba(25, 20, 3, 0.98)']}
@@ -248,17 +280,26 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                                     opacity: pageAnim,
                                     transform: [
                                         { scale: pageAnim },
-                                        { scale: cardScale }
-                                    ]
+                                        { scale: cardScale },
+                                    ],
                                 } as any as StyleProp<ViewStyle>
                             ]}
                         >
+                            <Animated.View
+                                pointerEvents="none"
+                                style={[styles.cardAccentOrb, styles.cardAccentOrbRight, { opacity: customerOrbOpacity }]}
+                            />
+                            <Animated.View
+                                pointerEvents="none"
+                                style={[styles.cardAccentOrb, styles.cardAccentOrbLeft, { opacity: technicianOrbOpacity }]}
+                            />
+
                             <View style={styles.tabContainer} onLayout={(e) => setTabWidth((e.nativeEvent.layout.width - 12) / 2)}>
                                 {tabWidth > 0 && (
                                     <Animated.View style={[
                                         styles.tabIndicator,
-                                        { 
-                                            width: tabWidth, 
+                                        {
+                                            width: tabWidth,
                                             transform: [{ translateX: tabTranslateX }],
                                             backgroundColor: tabIndicatorBg
                                         }
@@ -284,18 +325,25 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                             </View>
 
                             <View style={styles.titleWrapper}>
-                                <Animated.View style={[StyleSheet.absoluteFill, { opacity: customerCardOp, transform: [{ translateX: customerTextTranslateX }] }]} pointerEvents="none">
-                                    <Text style={[styles.title, { color: '#FFFFFF' }]}>Welcome Back</Text>
-                                    <Text style={styles.subtitle}>
-                                        Login as <Text style={{ color: customerColors.primary, fontWeight: '700' }}>Customer</Text>
-                                    </Text>
+                                <Animated.View
+                                    style={[
+                                        styles.roleBadge,
+                                        {
+                                            backgroundColor: roleBadgeBackground,
+                                            borderColor: roleBadgeBorder,
+                                        } as any,
+                                    ]}
+                                >
+                                    <View style={[styles.roleBadgeDot, { backgroundColor: activeThemeColor }]} />
+                                    <Text style={styles.roleBadgeText}>{roleBadgeLabel}</Text>
                                 </Animated.View>
-                                <Animated.View style={[StyleSheet.absoluteFill, { opacity: technicianCardOp, transform: [{ translateX: technicianTextTranslateX }] }]} pointerEvents="none">
-                                    <Text style={[styles.title, { color: colors.surface }]}>Welcome Back</Text>
-                                    <Text style={[styles.subtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}>
-                                        Login as <Text style={{ color: colors.accent, fontWeight: '700' }}>Technician</Text>
+                                <Text style={[styles.title, isTechnician ? styles.titleTechnician : null]}>Welcome Back</Text>
+                                <Text style={[styles.subtitle, isTechnician ? styles.subtitleTechnician : null]}>
+                                    Login as{' '}
+                                    <Text style={[styles.roleAccent, { color: activeThemeColor }]}>
+                                        {isTechnician ? 'Technician' : 'Customer'}
                                     </Text>
-                                </Animated.View>
+                                </Text>
                             </View>
 
                             <View style={styles.formContainer}>
@@ -349,7 +397,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ naviga
                                 </TouchableOpacity>
 
                                 <Button
-                                    title="Connect Securely"
+                                    title={primaryButtonLabel}
                                     onPress={handleLogin}
                                     loading={isLoading}
                                     fullWidth
@@ -440,7 +488,23 @@ const styles = StyleSheet.create({
         borderRadius: 32,
         padding: spacing.xl,
         borderWidth: 1,
+        overflow: 'hidden',
         ...shadows.lg,
+    },
+    cardAccentOrb: {
+        position: 'absolute',
+        width: 180,
+        height: 180,
+        borderRadius: 999,
+        top: -70,
+    },
+    cardAccentOrbRight: {
+        right: -34,
+        backgroundColor: 'rgba(0, 194, 179, 0.22)',
+    },
+    cardAccentOrbLeft: {
+        left: -52,
+        backgroundColor: 'rgba(255, 176, 0, 0.2)',
     },
     tabContainer: {
         flexDirection: 'row',
@@ -475,9 +539,31 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     titleWrapper: {
-        height: 80,
+        minHeight: 112,
         marginBottom: spacing.lg,
         justifyContent: 'center',
+    },
+    roleBadge: {
+        alignSelf: 'flex-start',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        borderWidth: 1,
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        marginBottom: spacing.md,
+    },
+    roleBadgeDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 999,
+    },
+    roleBadgeText: {
+        ...typography.caption,
+        color: '#F3F7FB',
+        fontWeight: '700',
+        letterSpacing: 0.3,
     },
     title: {
         ...typography.h1,
@@ -485,10 +571,19 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         marginBottom: spacing.xs,
     },
+    titleTechnician: {
+        color: colors.surface,
+    },
     subtitle: {
         ...typography.body,
         fontSize: 16,
         color: 'rgba(255,255,255,0.7)',
+    },
+    subtitleTechnician: {
+        color: 'rgba(255, 255, 255, 0.8)',
+    },
+    roleAccent: {
+        fontWeight: '700',
     },
     formContainer: {
         marginTop: spacing.sm,

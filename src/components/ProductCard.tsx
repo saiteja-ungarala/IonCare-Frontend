@@ -56,12 +56,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             <View style={[styles.imageContainer, { backgroundColor: theme.surfaceSecondary || '#F3F4F6' }]}>
                 {!imageError ? (
-                    <Image
-                        source={getProductImageSource((product as any).image_url)}
-                        style={styles.productImage}
-                        resizeMode="contain"
-                        onError={() => setImageError((prev) => (prev ? prev : true))}
-                    />
+                    <View style={styles.imageStage}>
+                        <Image
+                            source={getProductImageSource((product as any).image_url || product.image)}
+                            style={styles.productImage}
+                            resizeMode="contain"
+                            onError={() => setImageError((prev) => (prev ? prev : true))}
+                        />
+                    </View>
                 ) : (
                     <View style={styles.iconCircle}>
                         <Ionicons name={getIcon()} size={36} color={theme.primary} />
@@ -135,13 +137,23 @@ const styles = StyleSheet.create({
         letterSpacing: 0.3,
     },
     imageContainer: {
-        height: 110,
+        height: 128,
+        padding: spacing.sm,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    imageStage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: borderRadius.md,
+        overflow: 'hidden',
+        backgroundColor: 'rgba(255,255,255,0.78)',
+        paddingHorizontal: spacing.xs,
+        paddingVertical: 2,
+    },
     productImage: {
-        width: '75%',
-        height: '75%',
+        width: '97%',
+        height: '97%',
     },
     iconCircle: {
         width: 64,

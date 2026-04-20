@@ -363,8 +363,8 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
                                 <Ionicons name="people" size={22} color={'#90E0EF'} />
                             </View>
                             <View style={styles.referralContent}>
-                                <Text style={[styles.referralTitle, { color: '#fff' }]}>Refer & Earn ₹5,000</Text>
-                                <Text style={[styles.referralDesc, { color: 'rgba(255,255,255,0.75)' }]}>Invite friends · Earn on every order</Text>
+                                <Text style={[styles.referralTitle, { color: '#fff' }]}>Refer & Earn 10%</Text>
+                                <Text style={[styles.referralDesc, { color: 'rgba(255,255,255,0.75)' }]}>Direct 10% · Second level 5%</Text>
                             </View>
                             <View style={[styles.referralArrow, { backgroundColor: 'rgba(255,255,255,0.12)' }]}>
                                 <Ionicons name="arrow-forward" size={18} color={'#90E0EF'} />

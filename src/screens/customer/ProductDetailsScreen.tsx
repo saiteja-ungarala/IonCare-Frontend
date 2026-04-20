@@ -15,7 +15,7 @@ import { spacing, typography, borderRadius, shadows } from '../../theme/theme';
 import { Button } from '../../components';
 import { useCartStore } from '../../store/cartStore';
 import storeService, { StoreProduct } from '../../services/storeService';
-import { resolveProductImageSource } from '../../utils/productImage';
+import { resolveProductImageSources } from '../../utils/productImage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { customerColors } from '../../theme/customerTheme';
@@ -36,6 +36,8 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
     const [isLoading, setIsLoading] = useState(true);
     const [addingToCart, setAddingToCart] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [imageAttempt, setImageAttempt] = useState(0);
+    const [imageFailed, setImageFailed] = useState(false);
 
     const { addProductToCart, items, totalItems, fetchCart } = useCartStore();
 
@@ -47,6 +49,8 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
     const loadProduct = async () => {
         setIsLoading(true);
         setError(null);
+        setImageAttempt(0);
+        setImageFailed(false);
         try {
             const data = await storeService.getProductById(productId);
             setProduct(data);
@@ -138,7 +142,22 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
     const discount = hasDiscount
         ? Math.round(((mrp - product.price) / mrp) * 100)
         : 0;
-    const imageSource = resolveProductImageSource(product.imageUrl);
+    const productImageRaw = product.imageUrl
+        || product.imageUrl1
+        || product.imageUrl2
+        || product.imageUrl3
+        || product.imageUrl4
+        || product.imageUrl5
+        || product.image_url
+        || product.image_url1
+        || product.image_url2
+        || product.image_url3
+        || product.image_url4
+        || product.image_url5
+        || product.image_url_full
+        || product.imageUrlFull;
+    const imageSources = resolveProductImageSources(productImageRaw);
+    const imageSource = imageSources[Math.min(imageAttempt, Math.max(imageSources.length - 1, 0))];
     const productCartItem = items.find((item) => item.itemType === 'product' && item.productId === product.id);
     const quantityInCart = productCartItem?.qty ?? 0;
     const isInCart = quantityInCart > 0;
@@ -178,8 +197,19 @@ export const ProductDetailsScreen = ({ navigation, route }: any) => {
                             <Text style={styles.discountText}>{discount}% OFF</Text>
                         </View>
                     )}
-                    {imageSource ? (
-                        <Image source={imageSource} style={styles.productImage} resizeMode="contain" />
+                    {imageSource && !imageFailed ? (
+                        <Image
+                            source={imageSource}
+                            style={styles.productImage}
+                            resizeMode="contain"
+                            onError={() => {
+                                if (imageAttempt < imageSources.length - 1) {
+                                    setImageAttempt((prev) => prev + 1);
+                                    return;
+                                }
+                                setImageFailed(true);
+                            }}
+                        />
                     ) : (
                         <Ionicons name={getIcon()} size={120} color={customerColors.primary} />
                     )}

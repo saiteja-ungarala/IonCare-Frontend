@@ -63,17 +63,17 @@ interface WalletTransactionLike {
 const rewardTiers = [
     {
         level: 'Direct Referral',
-        reward: '\u20B95,000',
+        reward: '10%',
         icon: 'person-add' as const,
         color: '#0077B6',
-        description: 'When your friend places a paid order',
+        description: 'Of paid product value from your referred customer order',
     },
     {
         level: 'Second Level',
-        reward: '\u20B92,000',
+        reward: '5%',
         icon: 'people' as const,
         color: '#7C3AED',
-        description: "When your friend's friend places a paid order",
+        description: "Of paid product value when your referral's referral orders",
     },
 ];
 
@@ -81,11 +81,14 @@ const howItWorks = [
     { step: '1', text: 'Share your unique referral code', icon: 'share-social' as const },
     { step: '2', text: 'Friend signs up using your code', icon: 'person-add' as const },
     { step: '3', text: 'Friend places a paid order', icon: 'bag-check' as const },
-    { step: '4', text: 'You earn \u20B95,000 in your wallet', icon: 'wallet' as const },
+    { step: '4', text: 'Direct referral earns 10%, second level earns 5%', icon: 'wallet' as const },
 ];
 
 const formatCurrency = (value: number): string =>
-    `\u20B9${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+    `\u20B9${Number(value || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: Number(value || 0) % 1 === 0 ? 0 : 2,
+        maximumFractionDigits: 2,
+    })}`;
 
 const normalizeStatus = (status: string): ReferralStatus =>
     String(status).trim().toLowerCase() === 'credited' ? 'credited' : 'pending';
@@ -256,7 +259,7 @@ export const ReferralScreen: React.FC = () => {
         }
 
         await Share.share({
-            message: `Join IonoraCare and get \u20B910,000 welcome bonus! Use my referral code: ${referralCode}\nDownload now: https://ionoracare.com`,
+            message: `Join IonoraCare using my referral code ${referralCode}. Earn great referral rewards on paid product orders.\nDownload now: https://ionoracare.com`,
             title: 'Join IonoraCare',
         });
     };
@@ -284,8 +287,8 @@ export const ReferralScreen: React.FC = () => {
                     <View style={styles.heroSpacer} />
                 </View>
 
-                <Text style={styles.heroHeadline}>Earn up to{'\n'}\u20B95,000 per referral</Text>
-                <Text style={styles.heroSub}>Share your code. Track rewards. Earn when friends order.</Text>
+                <Text style={styles.heroHeadline}>Earn{'\n'}10% direct, 5% second level</Text>
+                <Text style={styles.heroSub}>Share your code. Track rewards. Earn on paid product orders.</Text>
 
                 <Animated.View style={[styles.codeCard, { transform: [{ scale: scaleAnim }] }]}>
                     <Text style={styles.codeLabel}>YOUR REFERRAL CODE</Text>

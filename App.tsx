@@ -449,9 +449,7 @@ export default function App() {
 
     const renderStack = () => {
         if (!isAuthenticated) {
-            // If a role was preserved from logout, go straight to Login (not RoleSelection)
-            const initialRoute = user === null && selectedRole ? 'Login' : 'RoleSelection';
-            return <AuthStackWithRole initialRoute={initialRoute} />;
+            return <AuthStack />;
         }
 
         if (user?.role === 'technician') {
@@ -465,7 +463,7 @@ export default function App() {
         return <AuthStackWithRole initialRoute="RoleSelection" />;
     };
 
-    const navigatorKey = isAuthenticated ? user?.role || 'auth' : `auth-${selectedRole ?? 'none'}`;
+    const navigatorKey = isAuthenticated ? user?.role || 'app' : 'auth';
 
     return (
         <AppErrorBoundary>

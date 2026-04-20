@@ -550,7 +550,9 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                                 <View style={styles.footer}>
                                     <View style={styles.footerRow}>
                                         <Text style={styles.footerText}>Already have an account? </Text>
-                                        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                                        <TouchableOpacity
+                                            onPress={() => navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] })}
+                                        >
                                             <Text style={[styles.footerLink, { color: activeThemeColor }]}>Login</Text>
                                         </TouchableOpacity>
                                     </View>

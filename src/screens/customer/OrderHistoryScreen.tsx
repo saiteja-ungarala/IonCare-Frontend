@@ -18,6 +18,7 @@ import { OrderListItem } from '../../services/ordersService';
 import { useOrdersStore } from '../../store/ordersStore';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { resolveProductImageSource } from '../../utils/productImage';
 
 type OrderHistoryScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -104,6 +105,7 @@ export const OrderHistoryScreen: React.FC<OrderHistoryScreenProps> = ({ navigati
     const renderOrderCard = (order: OrderListItem) => {
         const badgeColor = getStatusColor(order.status);
         const firstItemName = order.firstItem?.productName || 'Product';
+        const firstItemImageSource = resolveProductImageSource(order.firstItem?.imageUrl);
 
         return (
             <TouchableOpacity
@@ -132,8 +134,8 @@ export const OrderHistoryScreen: React.FC<OrderHistoryScreenProps> = ({ navigati
                 {order.firstItem ? (
                     <View style={styles.previewRow}>
                         <View style={styles.thumbnail}>
-                            {order.firstItem.imageUrl ? (
-                                <Image source={{ uri: order.firstItem.imageUrl }} style={styles.thumbnailImage} />
+                            {firstItemImageSource ? (
+                                <Image source={firstItemImageSource} style={styles.thumbnailImage} />
                             ) : (
                                 <Ionicons name="cube-outline" size={18} color={colors.primary} />
                             )}

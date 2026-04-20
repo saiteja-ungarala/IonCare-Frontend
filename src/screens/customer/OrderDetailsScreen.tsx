@@ -17,6 +17,7 @@ import { borderRadius, spacing, typography, shadows } from '../../theme/theme';
 import { customerColors } from '../../theme/customerTheme';
 import { useOrdersStore } from '../../store/ordersStore';
 import { CancelReasonModal } from '../../components/CancelReasonModal';
+import { resolveProductImageSource } from '../../utils/productImage';
 
 type OrderDetailsScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -184,24 +185,28 @@ export const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ navigati
                 {/* Items */}
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Items</Text>
-                    {selectedOrder.items.map((item) => (
-                        <View key={item.id} style={styles.itemRow}>
-                            <View style={styles.itemThumb}>
-                                {item.imageUrl ? (
-                                    <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
-                                ) : (
-                                    <Ionicons name="cube-outline" size={18} color={customerColors.primary} />
-                                )}
+                    {selectedOrder.items.map((item) => {
+                        const itemImageSource = resolveProductImageSource(item.imageUrl);
+
+                        return (
+                            <View key={item.id} style={styles.itemRow}>
+                                <View style={styles.itemThumb}>
+                                    {itemImageSource ? (
+                                        <Image source={itemImageSource} style={styles.itemImage} />
+                                    ) : (
+                                        <Ionicons name="cube-outline" size={18} color={customerColors.primary} />
+                                    )}
+                                </View>
+                                <View style={styles.itemInfo}>
+                                    <Text style={styles.itemName}>{item.productName}</Text>
+                                    <Text style={styles.itemMeta}>
+                                        Qty: {item.qty} x {formatCurrency(item.unitPrice)}
+                                    </Text>
+                                </View>
+                                <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal)}</Text>
                             </View>
-                            <View style={styles.itemInfo}>
-                                <Text style={styles.itemName}>{item.productName}</Text>
-                                <Text style={styles.itemMeta}>
-                                    Qty: {item.qty} × {formatCurrency(item.unitPrice)}
-                                </Text>
-                            </View>
-                            <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal)}</Text>
-                        </View>
-                    ))}
+                        );
+                    })}
                 </View>
 
                 {/* Order summary */}
@@ -382,3 +387,4 @@ const styles = StyleSheet.create({
     },
     cancelBtnText: { ...typography.body, color: customerColors.error, fontWeight: '700' },
 });
+

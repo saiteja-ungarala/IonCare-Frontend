@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, shadows, spacing, storeTheme } from '../../theme/theme';
 import storeService, { StoreProduct } from '../../services/storeService';
 import { useCartStore } from '../../store/cartStore';
-import { getProductImageSource } from '../../utils/productImage';
+import { getProductImageSource, resolveProductImageSources } from '../../utils/productImage';
 
 type ProductSort = 'popular' | 'new' | 'price_asc' | 'price_desc';
 
@@ -82,6 +82,7 @@ export function ProductListingScreen({ route, navigation }: any) {
     const [appliedSort, setAppliedSort] = React.useState<ProductSort>('popular');
     const [addingToCartId, setAddingToCartId] = React.useState<number | null>(null);
     const [failedImages, setFailedImages] = React.useState<Record<number, boolean>>({});
+    const [imageAttempts, setImageAttempts] = React.useState<Record<number, number>>({});
     const { addProductToCart, totalItems, fetchCart } = useCartStore();
     const insets = useSafeAreaInsets();
 
@@ -99,6 +100,8 @@ export function ProductListingScreen({ route, navigation }: any) {
                 limit: 100,
             });
             setProducts(response.items);
+            setFailedImages({});
+            setImageAttempts({});
         } catch (err: any) {
             console.error('[StoreProductList] load failed:', err);
             setError(err?.message || 'Failed to load products');
@@ -130,8 +133,24 @@ export function ProductListingScreen({ route, navigation }: any) {
     };
 
     const renderProduct = ({ item, index }: { item: StoreProduct; index: number }) => {
-        const productImage = item.image_url_full || item.imageUrlFull || item.image_url || item.imageUrl;
-        const imageSource = getProductImageSource(productImage);
+        const productImage = item.imageUrl
+            || item.imageUrl1
+            || item.imageUrl2
+            || item.imageUrl3
+            || item.imageUrl4
+            || item.imageUrl5
+            || item.image_url
+            || item.image_url1
+            || item.image_url2
+            || item.image_url3
+            || item.image_url4
+            || item.image_url5
+            || item.image_url_full
+            || item.imageUrlFull;
+        const imageSources = resolveProductImageSources(productImage);
+        const sourceCount = imageSources.length;
+        const attemptIndex = Math.max(0, Math.min(imageAttempts[item.id] || 0, Math.max(sourceCount - 1, 0)));
+        const imageSource = sourceCount > 0 ? imageSources[attemptIndex] : getProductImageSource(productImage);
         const shouldShowImage = !failedImages[item.id];
         const showMrp = item.mrp != null && item.mrp > item.price;
         const discountPercent = showMrp ? Math.max(1, Math.round(((item.mrp! - item.price) / item.mrp!) * 100)) : 0;
@@ -176,26 +195,44 @@ export function ProductListingScreen({ route, navigation }: any) {
                         <Ionicons name="heart" size={14} color="#D2B7DC" />
                     </TouchableOpacity>
 
-                    {shouldShowImage ? (
-                        <Image
-                            source={imageSource}
-                            style={styles.productImage}
-                            resizeMode="contain"
-                            onError={() => {
-                                setFailedImages((prev) => {
-                                    if (prev[item.id]) {
-                                        return prev;
+                    <View style={styles.imageStage}>
+                        {shouldShowImage ? (
+                            <Image
+                                source={imageSource}
+                                style={styles.productImage}
+                                resizeMode="contain"
+                                onError={() => {
+                                    if (attemptIndex < sourceCount - 1) {
+                                        setImageAttempts((prev) => ({ ...prev, [item.id]: attemptIndex + 1 }));
+                                        return;
                                     }
-                                    return { ...prev, [item.id]: true };
-                                });
-                            }}
-                        />
-                    ) : (
-                        <View style={styles.imageFallback}>
-                            <Ionicons name="image-outline" size={22} color={storeTheme.textSecondary} />
-                            <Text style={styles.imageFallbackText}>No image</Text>
-                        </View>
-                    )}
+
+                                    if (__DEV__) {
+                                        const candidateUris = imageSources
+                                            .map((source) => (source as any)?.uri)
+                                            .filter(Boolean);
+                                        console.warn('[StoreProductList] image failed after all candidates', {
+                                            productId: item.id,
+                                            rawImage: productImage,
+                                            candidateUris,
+                                        });
+                                    }
+
+                                    setFailedImages((prev) => {
+                                        if (prev[item.id]) {
+                                            return prev;
+                                        }
+                                        return { ...prev, [item.id]: true };
+                                    });
+                                }}
+                            />
+                        ) : (
+                            <View style={styles.imageFallback}>
+                                <Ionicons name="image-outline" size={22} color={storeTheme.textSecondary} />
+                                <Text style={styles.imageFallbackText}>No image</Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
 
                 <View style={styles.bodyWrap}>
@@ -517,8 +554,10 @@ const styles = StyleSheet.create({
         ...shadows.sm,
     },
     mediaWrap: {
-        height: 136,
-        padding: spacing.sm,
+        height: 148,
+        paddingHorizontal: spacing.sm,
+        paddingTop: spacing.xl + 2,
+        paddingBottom: spacing.sm,
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
@@ -579,11 +618,24 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(0,0,0,0.06)',
         zIndex: 6,
     },
+    imageStage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 18,
+        overflow: 'hidden',
+        backgroundColor: 'rgba(255,255,255,0.78)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: spacing.xs,
+        paddingVertical: 2,
+    },
     productImage: {
-        width: '72%',
-        height: '72%',
+        width: '97%',
+        height: '97%',
     },
     imageFallback: {
+        width: '100%',
+        height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
     },

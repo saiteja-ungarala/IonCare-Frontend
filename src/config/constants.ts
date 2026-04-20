@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
 export const DEFAULT_API_URL = 'https://care-api.lifeionizersindia.com/api';
+const DEFAULT_IMAGE_BASE_URL = 'https://pub-f1f2c948f5cd4ca485551ff4b5ef1d73.r2.dev/assets/images/';
 export const FORCE_WEB_PROXY = process.env.EXPO_PUBLIC_FORCE_WEB_PROXY === 'true';
 
 export const normalizeApiUrl = (url: string): string => {
@@ -53,9 +54,13 @@ const resolveApiBaseUrl = (): string => {
 };
 
 const normalizeOptionalValue = (value?: string): string => String(value || '').trim();
+const normalizeImageBaseUrl = (value: string): string => value.trim().replace(/\/+$/, '');
 
 export const API_BASE_URL = resolveApiBaseUrl();
 export const SERVER_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+export const IMAGE_BASE_URL = normalizeImageBaseUrl(
+    process.env.EXPO_PUBLIC_IMAGE_BASE_URL || DEFAULT_IMAGE_BASE_URL
+);
 export const SUPPORT_CONFIG = {
     phone: normalizeOptionalValue(process.env.EXPO_PUBLIC_SUPPORT_PHONE),
     email: normalizeOptionalValue(process.env.EXPO_PUBLIC_SUPPORT_EMAIL),

@@ -33,8 +33,18 @@ export interface StoreProduct {
     stockQty: number;
     image_url: string | null;
     image_url_full: string | null;
+    image_url1: string | null;
+    image_url2: string | null;
+    image_url3: string | null;
+    image_url4: string | null;
+    image_url5: string | null;
     imageUrl: string | null;
     imageUrlFull: string | null;
+    imageUrl1: string | null;
+    imageUrl2: string | null;
+    imageUrl3: string | null;
+    imageUrl4: string | null;
+    imageUrl5: string | null;
     sku: string | null;
     category: {
         id: number;
@@ -99,9 +109,14 @@ const mapBrand = (raw: any): StoreBrand => ({
 });
 
 const mapProduct = (raw: any): StoreProduct => {
+    const imageUrl1 = toNullableString(raw.image_url1 ?? raw.imageUrl1);
+    const imageUrl2 = toNullableString(raw.image_url2 ?? raw.imageUrl2);
+    const imageUrl3 = toNullableString(raw.image_url3 ?? raw.imageUrl3);
+    const imageUrl4 = toNullableString(raw.image_url4 ?? raw.imageUrl4);
+    const imageUrl5 = toNullableString(raw.image_url5 ?? raw.imageUrl5);
     const imageUrlFull = toNullableString(raw.image_url_full ?? raw.imageUrlFull);
     const imageUrlRaw = toNullableString(raw.image_url ?? raw.imageUrl);
-    const preferredImage = imageUrlFull || imageUrlRaw;
+    const preferredImage = imageUrl1 || imageUrl2 || imageUrl3 || imageUrl4 || imageUrl5 || imageUrlRaw || imageUrlFull;
 
     return {
         id: Number(raw.id),
@@ -113,8 +128,18 @@ const mapProduct = (raw: any): StoreProduct => {
         stockQty: Number(raw.stock_qty ?? raw.stockQty ?? 0),
         image_url: imageUrlRaw,
         image_url_full: imageUrlFull,
+        image_url1: imageUrl1,
+        image_url2: imageUrl2,
+        image_url3: imageUrl3,
+        image_url4: imageUrl4,
+        image_url5: imageUrl5,
         imageUrl: preferredImage,
         imageUrlFull: imageUrlFull,
+        imageUrl1: imageUrl1,
+        imageUrl2: imageUrl2,
+        imageUrl3: imageUrl3,
+        imageUrl4: imageUrl4,
+        imageUrl5: imageUrl5,
         sku: toNullableString(raw.sku),
         category: {
             id: Number(raw.category?.id ?? 0),
